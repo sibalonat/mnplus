@@ -1,0 +1,20 @@
+# .gitignore for GitHub Pages Blog
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Optional: Uncomment if you're using Node.js for local development
+# node_modules/
+# package-lock.json
