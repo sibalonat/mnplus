@@ -1,16 +1,18 @@
-# My GitHub Pages Blog
+# [arra.blog]
 
-A dynamic, animated blog built with vanilla HTML, CSS, and JavaScript that renders Markdown blog posts.
+**Breaking problems into elements**
+
+A minimal, dynamic blog built with vanilla HTML, CSS, and JavaScript that renders Markdown blog posts. Inspired by Bauhaus and Constructivism design principles.
 
 ## Features
 
-- ✨ **Animated Homepage**: Smooth CSS animations with floating shapes
+- ✨ **Minimal Animations**: Subtle geometric animations with Bauhaus-inspired shapes
 - 📝 **Markdown Blog Posts**: Write posts in Markdown format
 - 🔄 **Dynamic Rendering**: Posts are fetched and rendered client-side using JavaScript
 - 📱 **Responsive Design**: Works on all device sizes
-- 🎨 **Modern UI**: Clean, professional design with gradients and animations
+- 🎨 **Bauhaus-Inspired Design**: Bold typography, geometric shapes, and primary colors
 - 🚀 **Fast Loading**: Lightweight with no heavy dependencies
-- 📚 **Latest Posts**: Automatically displays the 5 most recent posts
+- 📚 **Latest Posts**: Automatically displays the 3 most recent posts
 
 ## Live Demo
 
@@ -20,9 +22,9 @@ Visit the live site at: `https://yourusername.github.io/gitpages`
 
 1. Blog posts are written in Markdown (`.md` files) in the `posts/` directory
 2. Post metadata is stored in `posts/posts-metadata.json`
-3. JavaScript fetches the metadata and displays the latest 5 posts
+3. JavaScript fetches the metadata and displays the latest 3 posts
 4. When a post is clicked, the Markdown file is fetched and rendered to HTML using [marked.js](https://marked.js.org/)
-5. Smooth animations enhance the user experience
+5. Minimal geometric animations enhance the user experience with Bauhaus design principles
 
 ## Setup Instructions
 
@@ -105,29 +107,31 @@ gitpages/
 ## Technologies Used
 
 - **HTML5**: Structure
-- **CSS3**: Styling and animations
+- **CSS3**: Styling and minimal Bauhaus-inspired animations
 - **JavaScript (ES6+)**: Dynamic functionality
 - **Marked.js**: Markdown parser (loaded via CDN)
 - **GitHub Pages**: Hosting
+- **Design**: Inspired by Bauhaus and Constructivism movements
 
 ## Customization
 
 ### Change Colors
 
-Edit the CSS variables in `styles.css`:
+Edit the CSS variables in `styles.css`. Current Bauhaus-inspired palette:
 
 ```css
 :root {
-  --primary-color: #6366f1;
-  --secondary-color: #8b5cf6;
-  --text-color: #1f2937;
+  --primary-color: #e63946; /* Red */
+  --secondary-color: #1d3557; /* Navy */
+  --accent-yellow: #f4a261; /* Yellow */
+  --text-color: #0a0a0a; /* Black */
   /* ... */
 }
 ```
 
 ### Modify Animations
 
-Edit the animation keyframes in `styles.css`:
+Edit the animation keyframes in `styles.css` for more or less movement:
 
 ```css
 @keyframes float {
@@ -135,9 +139,25 @@ Edit the animation keyframes in `styles.css`:
   100% {
     transform: translate(0, 0) rotate(0deg);
   }
-  /* ... */
+  50% {
+    transform: translate(20px, 30px) rotate(45deg);
+  }
 }
 ```
+
+### Change Number of Displayed Posts
+
+Edit `BLOG_CONFIG` in `blog.js`:
+
+```javascript
+const BLOG_CONFIG = {
+  postsDirectory: "posts/",
+  maxLatestPosts: 3, // Change this number
+  postsMetadata: "posts/posts-metadata.json",
+};
+```
+
+````
 
 ### Change Number of Displayed Posts
 
@@ -149,7 +169,7 @@ const BLOG_CONFIG = {
   maxLatestPosts: 5, // Change this number
   postsMetadata: "posts/posts-metadata.json",
 };
-```
+````
 
 ## Local Development
 

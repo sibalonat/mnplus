@@ -1,7 +1,7 @@
 // Blog configuration
 const BLOG_CONFIG = {
     postsDirectory: 'posts/',
-    maxLatestPosts: 5,
+    maxLatestPosts: 3,
     postsMetadata: 'posts/posts-metadata.json'
 };
 
