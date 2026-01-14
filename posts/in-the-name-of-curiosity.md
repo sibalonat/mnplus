@@ -14,6 +14,133 @@ I used to play with them. Other older kids would invite me to play, and I would.
 
 At that time, I remember two things were apparent to me: the fact that I was eager to participate and eager to learn what other people understood and I didn't. When I was this age, I might have felt happy to know this, because I was always happy, running around and smiling. A small long hair blond boy, will be a bald grown up.
 
+<div class="game-container" style="max-width: 400px; margin: 40px auto; text-align: center;">
+  <h4 style="margin-bottom: 10px; color: var(--primary);">Try the 90s Racing Game!</h4>
+  <canvas id="raceGame" width="300" height="400" style="border: 3px solid var(--primary); background: #222; display: block; margin: 0 auto;"></canvas>
+  <p style="margin-top: 10px; color: var(--text-light); font-size: 0.9em;">Use Arrow Keys to stay on track!</p>
+  <button id="startGame" style="padding: 10px 20px; background: var(--primary); color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">Start Game</button>
+  <p id="gameScore" style="margin-top: 10px; font-weight: bold; color: var(--accent);">Score: 0</p>
+</div>
+
+<script>
+(function() {
+  const canvas = document.getElementById('raceGame');
+  const ctx = canvas.getContext('2d');
+  const startBtn = document.getElementById('startGame');
+  const scoreDisplay = document.getElementById('gameScore');
+  
+  let gameRunning = false;
+  let score = 0;
+  let carX = 135;
+  let carY = 320;
+  let roadOffset = 0;
+  let speed = 2;
+  let gameLoop;
+  
+  const keys = { left: false, right: false };
+  
+  // Road boundaries
+  const roadLeft = 50;
+  const roadRight = 250;
+  
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowLeft') keys.left = true;
+    if (e.key === 'ArrowRight') keys.right = true;
+  });
+  
+  document.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft') keys.left = false;
+    if (e.key === 'ArrowRight') keys.right = false;
+  });
+  
+  function drawRoad() {
+    ctx.fillStyle = '#333';
+    ctx.fillRect(roadLeft, 0, roadRight - roadLeft, canvas.height);
+    
+    // Road lines
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 3;
+    for (let i = 0; i < 10; i++) {
+      const y = (i * 80 + roadOffset) % canvas.height;
+      ctx.beginPath();
+      ctx.moveTo(150, y);
+      ctx.lineTo(150, y + 40);
+      ctx.stroke();
+    }
+    
+    // Road edges
+    ctx.strokeStyle = '#ff0';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(roadLeft, 0);
+    ctx.lineTo(roadLeft, canvas.height);
+    ctx.moveTo(roadRight, 0);
+    ctx.lineTo(roadRight, canvas.height);
+    ctx.stroke();
+  }
+  
+  function drawCar() {
+    ctx.fillStyle = '#e74c3c';
+    ctx.fillRect(carX, carY, 30, 50);
+    ctx.fillStyle = '#3498db';
+    ctx.fillRect(carX + 5, carY + 5, 20, 15);
+  }
+  
+  function update() {
+    if (!gameRunning) return;
+    
+    // Move car
+    if (keys.left && carX > roadLeft + 10) carX -= 3;
+    if (keys.right && carX < roadRight - 40) carX += 3;
+    
+    // Check if car is on road
+    if (carX < roadLeft || carX + 30 > roadRight) {
+      gameOver();
+      return;
+    }
+    
+    // Update road
+    roadOffset += speed;
+    score += Math.floor(speed);
+    speed += 0.001;
+    
+    scoreDisplay.textContent = `Score: ${Math.floor(score)}`;
+    
+    // Draw
+    ctx.fillStyle = '#111';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    drawRoad();
+    drawCar();
+    
+    gameLoop = requestAnimationFrame(update);
+  }
+  
+  function gameOver() {
+    gameRunning = false;
+    cancelAnimationFrame(gameLoop);
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#fff';
+    ctx.font = '30px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over!', canvas.width/2, canvas.height/2);
+    ctx.font = '20px Arial';
+    ctx.fillText(`Final Score: ${Math.floor(score)}`, canvas.width/2, canvas.height/2 + 40);
+    startBtn.textContent = 'Play Again';
+  }
+  
+  startBtn.addEventListener('click', () => {
+    gameRunning = true;
+    score = 0;
+    speed = 2;
+    carX = 135;
+    roadOffset = 0;
+    startBtn.textContent = 'Playing...';
+    update();
+  });
+})();
+</script>
+
 But I assume I mustn't been very happy for example when my mother nor the older kids, either didn't let me to play with them, or didn't think I should have a say into their play time. I was three, but had very strong opinion that I wanted to play - take the risk and own it.
 
 ## About This Blog
