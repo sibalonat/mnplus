@@ -111,9 +111,7 @@ Result:
 
 ```markdown
 ---
-
 or
-
 ---
 
 or
@@ -250,7 +248,7 @@ document.getElementById("content").innerHTML = html;
 
 ## Quick Reference
 
-````markdown
+```markdown
 # Headers
 
 # H1 ## H2 ### H3 #### H4 ##### H5 ###### H6
@@ -284,7 +282,7 @@ _italic_ **bold** **_both_** ~~strike~~
 # Horizontal Rule
 
 --- or \*\*\* or \_\_\_
-````
+```
 
 ## Conclusion
 

@@ -1,38 +1,46 @@
 {
     "posts": [
         {
+            "title": "In the Name of Curiosity",
+            "filename": "in-the-name-of-curiosity.md",
+            "date": "2026-01-14",
+            "author": "Marin Nikolli",
+            "category": "start",
+            "excerpt": "A personal journey from childhood curiosity to creating arra.blog - exploring early memories from Albania and the spark that ignited a passion for learning and technology."
+        },
+        {
             "filename": "welcome-to-my-blog.md",
             "title": "Welcome to My Blog",
             "date": "2026-01-12",
-            "author": "Your Name",
+            "author": "Marin Nikolli",
             "excerpt": "This is the first post on my new GitHub Pages blog. Learn about what I'll be writing about and how this blog works."
         },
         {
             "filename": "getting-started-with-javascript.md",
             "title": "Getting Started with JavaScript",
             "date": "2026-01-10",
-            "author": "Your Name",
+            "author": "Marin Nikolli",
             "excerpt": "A beginner's guide to JavaScript - covering the basics of variables, functions, and control structures."
         },
         {
             "filename": "building-dynamic-websites.md",
             "title": "Building Dynamic Websites",
             "date": "2026-01-08",
-            "author": "Your Name",
+            "author": "Marin Nikolli",
             "excerpt": "Explore how to create dynamic, interactive websites using vanilla JavaScript and modern web APIs."
         },
         {
             "filename": "markdown-guide.md",
             "title": "The Complete Markdown Guide",
             "date": "2026-01-05",
-            "author": "Your Name",
+            "author": "Marin Nikolli",
             "excerpt": "Everything you need to know about writing in Markdown - from basic formatting to advanced features."
         },
         {
             "filename": "web-animations.md",
             "title": "Creating Beautiful Web Animations",
             "date": "2026-01-03",
-            "author": "Your Name",
+            "author": "Marin Nikolli",
             "excerpt": "Learn how to create smooth, performant animations using CSS and JavaScript to enhance user experience."
         }
     ]
