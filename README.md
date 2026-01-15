@@ -179,7 +179,7 @@ To test locally, you need a web server (JavaScript fetch won't work with `file:/
 
 ```bash
 # Python 3
-python -m http.server 8000
+python -m http.server 8010
 
 # Then visit http://localhost:8000
 ```

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post - arra.blog</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="background-shapes">
+        <div class="shape circle"></div>
+        <div class="shape square"></div>
+        <div class="shape triangle"></div>
+    </div>
+
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <h1 class="site-title"><a href="index.html" style="color: inherit; text-decoration: none;">[arra.blog]</a></h1>
+                <p class="tagline">Breaking problems into elements</p>
+            </div>
+            <nav>
+                <a href="index.html" class="nav-link">Home</a>
+                <a href="index.html#blog" class="nav-link">Blog</a>
+                <a href="index.html#about" class="nav-link">About</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <article id="post-view" class="post-content">
+            <a href="index.html" class="back-button" style="display: inline-block; margin-bottom: 2rem;">← Back to Blog</a>
+            <div id="post-content">
+                <p style="text-align: center; color: var(--text-light);">Loading post...</p>
+            </div>
+        </article>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 arra.blog - Breaking problems into elements</p>
+        </div>
+    </footer>
+
+    <script>
+        // Get post filename from URL parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const postFilename = urlParams.get('post');
+
+        if (!postFilename) {
+            document.getElementById('post-content').innerHTML = 
+                '<p style="text-align: center; color: var(--text-light);">No post specified. <a href="index.html">Return to home</a></p>';
+        } else {
+            loadPost(postFilename);
+        }
+
+        async function loadPost(filename) {
+            try {
+                const response = await fetch(`posts/${filename}`);
+                if (!response.ok) {
+                    throw new Error('Failed to load post');
+                }
+                const markdown = await response.text();
+                const html = marked.parse(markdown);
+
+                document.getElementById('post-content').innerHTML = html;
+                
+                // Update page title
+                const firstHeading = document.querySelector('#post-content h1');
+                if (firstHeading) {
+                    document.title = firstHeading.textContent + ' - arra.blog';
+                }
+
+                // Execute any scripts that were in the markdown
+                executeScripts();
+            } catch (error) {
+                console.error('Error loading post:', error);
+                document.getElementById('post-content').innerHTML = 
+                    '<p style="text-align: center; color: var(--text-light);">Failed to load post. <a href="index.html">Return to home</a></p>';
+            }
+        }
+
+        // Execute script tags that were inserted via innerHTML
+        function executeScripts() {
+            const scripts = document.getElementById('post-content').querySelectorAll('script');
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement('script');
+                
+                // Copy all attributes
+                Array.from(oldScript.attributes).forEach(attr => {
+                    newScript.setAttribute(attr.name, attr.value);
+                });
+                
+                // Copy inline script content
+                if (oldScript.textContent) {
+                    newScript.textContent = oldScript.textContent;
+                }
+                
+                // Replace old script with new one (this causes execution)
+                oldScript.parentNode.replaceChild(newScript, oldScript);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -77,7 +77,10 @@ function createPostCard(post, index) {
     card.appendChild(excerpt);
     card.appendChild(readMore);
 
-    card.addEventListener('click', () => loadPost(post.filename));
+    // Link to separate post page instead of inline loading
+    card.addEventListener('click', () => {
+        window.location.href = `post.html?post=${post.filename}`;
+    });
 
     return card;
 }
