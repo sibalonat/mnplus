@@ -4,6 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post - arra.blog</title>
+    
+    <!-- SEO Meta Tags (will be dynamically updated) -->
+    <meta name="description" content="Read the latest post on arra.blog" id="meta-description" />
+    <meta name="keywords" content="blog, technology, programming" id="meta-keywords" />
+    <meta name="author" content="arra.blog" id="meta-author" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="" id="meta-og-url" />
+    <meta property="og:title" content="Post - arra.blog" id="meta-og-title" />
+    <meta property="og:description" content="Read the latest post on arra.blog" id="meta-og-description" />
+    <meta property="og:site_name" content="arra.blog" />
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary" />
+    <meta property="twitter:url" content="" id="meta-twitter-url" />
+    <meta property="twitter:title" content="Post - arra.blog" id="meta-twitter-title" />
+    <meta property="twitter:description" content="Read the latest post on arra.blog" id="meta-twitter-description" />
+    
+    <!-- Article metadata -->
+    <meta property="article:published_time" content="" id="meta-published-time" />
+    <meta property="article:author" content="" id="meta-article-author" />
+    
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 </head>
@@ -52,7 +75,68 @@
             document.getElementById('post-content').innerHTML = 
                 '<p style="text-align: center; color: var(--text-light);">No post specified. <a href="index.html">Return to home</a></p>';
         } else {
+            loadPostMetadata(postFilename);
             loadPost(postFilename);
+        }
+
+        // Load post metadata for SEO
+        async function loadPostMetadata(filename) {
+            try {
+                const response = await fetch('posts/posts-metadata.json');
+                if (!response.ok) return;
+                
+                const data = await response.json();
+                const postMeta = data.posts.find(p => p.filename === filename);
+                
+                if (postMeta) {
+                    updateSEOMeta(postMeta);
+                }
+            } catch (error) {
+                console.error('Error loading post metadata:', error);
+            }
+        }
+
+        // Update SEO meta tags
+        function updateSEOMeta(post) {
+            const baseUrl = 'https://sibalonat.github.io/mnplus/';
+            const postUrl = baseUrl + 'post.html?post=' + post.filename;
+            
+            // Update title
+            document.title = post.title + ' - arra.blog';
+            
+            // Update description
+            const description = post.excerpt || post.title;
+            document.getElementById('meta-description').setAttribute('content', description);
+            document.getElementById('meta-og-description').setAttribute('content', description);
+            document.getElementById('meta-twitter-description').setAttribute('content', description);
+            
+            // Update URLs
+            document.getElementById('meta-og-url').setAttribute('content', postUrl);
+            document.getElementById('meta-twitter-url').setAttribute('content', postUrl);
+            
+            // Update titles
+            document.getElementById('meta-og-title').setAttribute('content', post.title);
+            document.getElementById('meta-twitter-title').setAttribute('content', post.title);
+            
+            // Update author
+            if (post.author) {
+                document.getElementById('meta-author').setAttribute('content', post.author);
+                document.getElementById('meta-article-author').setAttribute('content', post.author);
+            }
+            
+            // Update published date
+            if (post.date) {
+                document.getElementById('meta-published-time').setAttribute('content', post.date);
+            }
+            
+            // Add canonical link
+            let canonical = document.querySelector('link[rel="canonical"]');
+            if (!canonical) {
+                canonical = document.createElement('link');
+                canonical.setAttribute('rel', 'canonical');
+                document.head.appendChild(canonical);
+            }
+            canonical.setAttribute('href', postUrl);
         }
 
         async function loadPost(filename) {
