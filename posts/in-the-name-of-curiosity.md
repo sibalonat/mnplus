@@ -22,7 +22,7 @@ At that time, I remember two things were apparent to me: the fact that I was eag
   <p id="gameScore" style="margin-top: 10px; font-weight: bold; color: #ff6b6b; font-size: 18px;">Score: 0</p>
 </div>
 
-<script src="posts/race-game.js"></script>
+<script type="text/javascript" src="posts/race-game.js"></script>
 
 But I assume I mustn't been very happy for example when my mother nor the older kids, either didn't let me to play with them, or didn't think I should have a say into their play time. I was three, but had very strong opinion that I wanted to play - take the risk and own it.
 
