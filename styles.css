@@ -42,13 +42,6 @@ body {
     margin-bottom: 60px;
 }
 
-.logo h1 {
-    font-size: 1.8rem;
-    font-weight: 900;
-    color: var(--text-color);
-    letter-spacing: -0.02em;
-}
-
 .nav-links {
     display: flex;
     gap: 30px;
