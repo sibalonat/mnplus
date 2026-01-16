@@ -1,106 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>[arra.blog] - Breaking problems into elements</title>
-    
-    <!-- SEO Meta Tags -->
-    <meta name="description" content="A minimal, dynamic blog built with vanilla HTML, CSS, and JavaScript. Exploring technology, curiosity, and breaking complex problems into manageable elements." />
-    <meta name="keywords" content="blog, technology, programming, web development, JavaScript, markdown, bauhaus design" />
-    <meta name="author" content="arra.blog" />
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://sibalonat.github.io/mnplus/" />
-    <meta property="og:title" content="[arra.blog] - Breaking problems into elements" />
-    <meta property="og:description" content="A minimal, dynamic blog exploring technology, curiosity, and breaking complex problems into manageable elements." />
-    <meta property="og:site_name" content="arra.blog" />
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary" />
-    <meta property="twitter:url" content="https://sibalonat.github.io/mnplus/" />
-    <meta property="twitter:title" content="[arra.blog] - Breaking problems into elements" />
-    <meta property="twitter:description" content="A minimal, dynamic blog exploring technology, curiosity, and breaking complex problems into manageable elements." />
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="https://sibalonat.github.io/mnplus/" />
-    
-    <!-- Favicon (animated via JS) -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
-    
-    <link rel="stylesheet" href="styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="favicon-animate.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  </head>
-  <body>
-    <div class="container">
-      <!-- Navigation -->
-      <nav class="nav-bar">
-        <div class="logo">
-          <h1 class="fade-in">[arra.blog]</h1>
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>[arra.blog] - Breaking problems into elements</title>
+
+  <!-- SEO Meta Tags -->
+  <meta name="description"
+    content="A minimal, dynamic blog built with vanilla HTML, CSS, and JavaScript. Exploring technology, curiosity, and breaking complex problems into manageable elements." />
+  <meta name="keywords"
+    content="blog, technology, programming, web development, JavaScript, markdown, bauhaus design" />
+  <meta name="author" content="arra.blog" />
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://sibalonat.github.io/mnplus/" />
+  <meta property="og:title" content="[arra.blog] - Breaking problems into elements" />
+  <meta property="og:description"
+    content="A minimal, dynamic blog exploring technology, curiosity, and breaking complex problems into manageable elements." />
+  <meta property="og:site_name" content="arra.blog" />
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary" />
+  <meta property="twitter:url" content="https://sibalonat.github.io/mnplus/" />
+  <meta property="twitter:title" content="[arra.blog] - Breaking problems into elements" />
+  <meta property="twitter:description"
+    content="A minimal, dynamic blog exploring technology, curiosity, and breaking complex problems into manageable elements." />
+
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://sibalonat.github.io/mnplus/" />
+
+  <!-- Favicon (animated via JS) -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="favicon-animate.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <nav class="nav-bar">
+      <div class="logo">
+        <h1 class="fade-in">[arra.blog]</h1>
+      </div>
+      <div class="nav-links">
+        <a href="#" class="nav-link active" data-page="home">Home</a>
+        <a href="#" class="nav-link" data-page="blog">Blog</a>
+        <a href="#" class="nav-link" data-page="about">About</a>
+      </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home-section" class="hero-section">
+      <div class="hero-content fade-in">
+        <!-- <h2 class="hero-title">[arra.blog]</h2> -->
+        <p class="hero-subtitle">Breaking problems into elements</p>
+        <div class="animated-shapes">
+          <div class="shape shape-1"></div>
+          <div class="shape shape-2"></div>
+          <div class="shape shape-3"></div>
         </div>
-        <div class="nav-links">
-          <a href="#" class="nav-link active" data-page="home">Home</a>
-          <a href="#" class="nav-link" data-page="blog">Blog</a>
-          <a href="#" class="nav-link" data-page="about">About</a>
-        </div>
-      </nav>
+      </div>
+    </section>
 
-      <!-- Hero Section -->
-      <section id="home-section" class="hero-section">
-        <div class="hero-content fade-in">
-          <h2 class="hero-title">[arra.blog]</h2>
-          <p class="hero-subtitle">Breaking problems into elements</p>
-          <div class="animated-shapes">
-            <div class="shape shape-1"></div>
-            <div class="shape shape-2"></div>
-            <div class="shape shape-3"></div>
-          </div>
-        </div>
-      </section>
+    <!-- Blog Section -->
+    <section id="blog-section" class="blog-section">
+      <h2 class="section-title">Latest Posts</h2>
+      <div id="posts-container" class="posts-grid">
+        <!-- Posts will be loaded here dynamically -->
+      </div>
+    </section>
 
-      <!-- Blog Section -->
-      <section id="blog-section" class="blog-section">
-        <h2 class="section-title">Latest Posts</h2>
-        <div id="posts-container" class="posts-grid">
-          <!-- Posts will be loaded here dynamically -->
-        </div>
-      </section>
+    <!-- Single Post View -->
+    <section id="post-view" class="post-view hidden">
+      <button id="back-button" class="back-button">← Back to Posts</button>
+      <article id="post-content" class="post-content">
+        <!-- Single post content will be loaded here -->
+      </article>
+    </section>
 
-      <!-- Single Post View -->
-      <section id="post-view" class="post-view hidden">
-        <button id="back-button" class="back-button">← Back to Posts</button>
-        <article id="post-content" class="post-content">
-          <!-- Single post content will be loaded here -->
-        </article>
-      </section>
+    <!-- About Section -->
+    <section id="about-section" class="about-section hidden">
+      <div class="about-content fade-in">
+        <h2>About [arra.blog]</h2>
+        <p>
+          <strong>Breaking problems into elements</strong> — This blog
+          explores the art of decomposing complex challenges into manageable
+          pieces.
+        </p>
+        <p>
+          Built with a minimal Bauhaus-inspired design, [arra.blog] is a
+          dynamic platform powered by GitHub Pages. All posts are written in
+          Markdown and rendered in real-time using JavaScript.
+        </p>
+        <p>Explore the latest 3 posts and dive into structured thinking.</p>
+      </div>
+    </section>
 
-      <!-- About Section -->
-      <section id="about-section" class="about-section hidden">
-        <div class="about-content fade-in">
-          <h2>About [arra.blog]</h2>
-          <p>
-            <strong>Breaking problems into elements</strong> — This blog
-            explores the art of decomposing complex challenges into manageable
-            pieces.
-          </p>
-          <p>
-            Built with a minimal Bauhaus-inspired design, [arra.blog] is a
-            dynamic platform powered by GitHub Pages. All posts are written in
-            Markdown and rendered in real-time using JavaScript.
-          </p>
-          <p>Explore the latest 3 posts and dive into structured thinking.</p>
-        </div>
-      </section>
+    <!-- Footer -->
+    <footer class="footer">
+      <p>&copy; 2026 [arra.blog] &mdash; Breaking problems into elements</p>
+    </footer>
+  </div>
 
-      <!-- Footer -->
-      <footer class="footer">
-        <p>&copy; 2026 [arra.blog] &mdash; Breaking problems into elements</p>
-      </footer>
-    </div>
+  <script src="blog.js"></script>
+</body>
 
-    <script src="blog.js"></script>
-  </body>
 </html>
