@@ -14,12 +14,12 @@ I used to play with them. Other older kids would invite me to play, and I would.
 
 At that time, I remember two things were apparent to me: the fact that I was eager to participate and eager to learn what other people understood, and I didn't. When I was this age, I might have felt happy to know this, because I was always happy, running around and smiling. A small long hair blond boy will be a bald grown-up.
 
-<div class="game-container" style="max-width: 400px; margin: 40px auto; text-align: center; padding: 20px; background: #1a1a1a; border-radius: 10px;">
-  <h4 style="margin-bottom: 15px; color: #00d4ff;">Try the 90s Racing Game!</h4>
-  <canvas id="raceGame" width="300" height="400" style="border: 3px solid #00d4ff; background: #222; display: block; margin: 0 auto;"></canvas>
-  <p style="margin-top: 10px; color: #999; font-size: 0.9em;">Use Arrow Keys ← → to stay on track!</p>
-  <button id="startGame" style="padding: 12px 30px; background: #00d4ff; color: #000; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: 16px;">Start Game</button>
-  <p id="gameScore" style="margin-top: 10px; font-weight: bold; color: #ff6b6b; font-size: 18px;">Score: 0</p>
+<div class="game-container" style="max-width: min(400px, 90vw); margin: 40px auto; text-align: center; padding: min(20px, 5vw); background: #1a1a1a; border-radius: 10px; box-sizing: border-box;">
+  <h4 style="margin-bottom: 15px; color: #00d4ff; font-size: clamp(16px, 4vw, 20px);">Try the 90s Racing Game!</h4>
+  <canvas id="raceGame" width="300" height="400" style="border: 3px solid #00d4ff; background: #222; display: block; margin: 0 auto; max-width: 100%; height: auto; width: auto;"></canvas>
+  <p style="margin-top: 10px; color: #999; font-size: clamp(12px, 3vw, 14px);">Use Arrow Keys ← → or Touch to stay on track!</p>
+  <button id="startGame" style="padding: 12px 30px; background: #00d4ff; color: #000; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: clamp(14px, 3.5vw, 16px); min-height: 44px; touch-action: manipulation;">Start Game</button>
+  <p id="gameScore" style="margin-top: 10px; font-weight: bold; color: #ff6b6b; font-size: clamp(16px, 4vw, 18px);">Score: 0</p>
 </div>
 
 <script type="text/javascript" src="posts/race-game.js"></script>
