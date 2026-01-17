@@ -41,76 +41,112 @@
         console.log('[Pressure Game] Starting initialization...');
 
         // GAME CONSTANTS
-        const GRAVITY = 0.3;
-        const PRESSURE_FORCE = 8;
-        const LATERAL_FORCE = 2.5;
-        const DAMPING = 0.98;
+        const GRAVITY = 0.08; // Slower gravity for water simulation
+        const PRESSURE_FORCE = 5;
+        const LATERAL_FORCE = 1.8;
+        const DAMPING = 0.95; // More damping for water resistance
         const CIRCLE_RADIUS = 15;
-        const TARGET_ZONE_WIDTH = 60;
-        const TARGET_ZONE_X = (canvas.width - TARGET_ZONE_WIDTH) / 2;
+        const POLE_WIDTH = 70;
+        const POLE_HEIGHT = 100; // Pole at the top
+        const POLE_X = (canvas.width - POLE_WIDTH) / 2;
+        const POLE_Y = 0; // Start at top
+        const BUTTON_LEFT_X = 50; // Position above left button
+        const BUTTON_RIGHT_X = canvas.width - 50; // Position above right button
+        const START_Y = canvas.height - 50; // Circles start near bottom
 
-        // GAME VARIABLES
+        let circlesInPole = [];
         let gameRunning = false;
-        let score = 0;
         let gameLoop = null;
-        let timeInZone = 0;
 
         const keys = { left: false, right: false };
 
-        // Two circles
+        // Two circles starting above buttons
         const circles = [
             {
-                x: 100,
-                y: 100,
+                x: BUTTON_LEFT_X,
+                y: START_Y,
                 vx: 0,
                 vy: 0,
                 color: '#ff6b6b',
-                inZone: false
+                inPole: false,
+                locked: false
             },
             {
-                x: 200,
-                y: 100,
+                x: BUTTON_RIGHT_X,
+                y: START_Y,
                 vx: 0,
                 vy: 0,
                 color: '#4ecdc4',
-                inZone: false
+                inPole: false,
+                locked: false
             }
         ];
 
         // Draw initial state
         function drawInitial() {
-            // Background
+            // Background - ocean theme
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Target zone
-            ctx.fillStyle = 'rgba(0, 255, 136, 0.1)';
-            ctx.fillRect(TARGET_ZONE_X, 0, TARGET_ZONE_WIDTH, canvas.height);
-            ctx.strokeStyle = '#00ff88';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.strokeRect(TARGET_ZONE_X, 0, TARGET_ZONE_WIDTH, canvas.height);
-            ctx.setLineDash([]);
+            // Draw water effect
+            ctx.fillStyle = 'rgba(0, 100, 150, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Target zone label
-            ctx.fillStyle = '#00ff88';
-            ctx.font = '14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('TARGET', canvas.width / 2, 20);
+            // Draw pole at top
+            drawPole();
 
             // Ground pressure indicators
             drawPressureIndicators(0, 0);
 
             // Circles
             circles.forEach(circle => {
+                if (!circle.locked) {
+                    ctx.fillStyle = circle.color;
+                    ctx.beginPath();
+                    ctx.arc(circle.x, circle.y, CIRCLE_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            });
+
+            // Locked circles in pole
+            circlesInPole.forEach(circle => {
                 ctx.fillStyle = circle.color;
                 ctx.beginPath();
                 ctx.arc(circle.x, circle.y, CIRCLE_RADIUS, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.strokeStyle = '#fff';
-                ctx.lineWidth = 2;
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 3;
                 ctx.stroke();
             });
+        }
+
+        // Draw the pole at the top
+        function drawPole() {
+            // Pole container
+            ctx.fillStyle = 'rgba(0, 255, 136, 0.2)';
+            ctx.fillRect(POLE_X, POLE_Y, POLE_WIDTH, POLE_HEIGHT);
+
+            // Pole walls
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(POLE_X, POLE_Y, POLE_WIDTH, POLE_HEIGHT);
+
+            // Pole opening at bottom
+            ctx.strokeStyle = '#00ff88';
+            ctx.lineWidth = 5;
+            ctx.beginPath();
+            ctx.moveTo(POLE_X, POLE_Y + POLE_HEIGHT);
+            ctx.lineTo(POLE_X + POLE_WIDTH, POLE_Y + POLE_HEIGHT);
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('GOAL', POLE_X + POLE_WIDTH / 2, POLE_Y + POLE_HEIGHT + 15);
         }
 
         // Draw pressure indicators at the bottom
@@ -158,37 +194,90 @@
         document.addEventListener('keydown', handleKeyDown);
         document.addEventListener('keyup', handleKeyUp);
 
-        // Check if circle is in target zone
-        function isInTargetZone(circle) {
-            return circle.x >= TARGET_ZONE_X + CIRCLE_RADIUS &&
-                circle.x <= TARGET_ZONE_X + TARGET_ZONE_WIDTH - CIRCLE_RADIUS;
+        // Check if circle is in pole zone
+        function isInPoleZone(circle) {
+            return circle.x >= POLE_X + CIRCLE_RADIUS &&
+                circle.x <= POLE_X + POLE_WIDTH - CIRCLE_RADIUS &&
+                circle.y >= POLE_Y &&
+                circle.y <= POLE_Y + POLE_HEIGHT;
+        }
+
+        // Check collision with pole walls (can't pass through)
+        function checkPoleCollision(circle) {
+            const poleLeft = POLE_X;
+            const poleRight = POLE_X + POLE_WIDTH;
+            const poleBottom = POLE_Y + POLE_HEIGHT;
+
+            // If circle is near pole opening and not inside
+            if (circle.y < poleBottom + CIRCLE_RADIUS &&
+                circle.y > POLE_Y - CIRCLE_RADIUS) {
+
+                // Bounce off left wall
+                if (circle.x + CIRCLE_RADIUS > poleLeft &&
+                    circle.x < poleLeft &&
+                    !isInPoleZone(circle)) {
+                    circle.x = poleLeft - CIRCLE_RADIUS;
+                    circle.vx *= -0.6;
+                }
+
+                // Bounce off right wall
+                if (circle.x - CIRCLE_RADIUS < poleRight &&
+                    circle.x > poleRight &&
+                    !isInPoleZone(circle)) {
+                    circle.x = poleRight + CIRCLE_RADIUS;
+                    circle.vx *= -0.6;
+                }
+            }
+        }
+
+        // Spawn new circle at button position
+        function spawnCircle(buttonSide) {
+            const x = buttonSide === 'left' ? BUTTON_LEFT_X : BUTTON_RIGHT_X;
+            const color = buttonSide === 'left' ? '#ff6b6b' : '#4ecdc4';
+
+            return {
+                x: x,
+                y: START_Y,
+                vx: 0,
+                vy: 0,
+                color: color,
+                inPole: false,
+                locked: false
+            };
         }
 
         // Update physics
         function updatePhysics() {
-            circles.forEach(circle => {
-                // Apply gravity
+            for (let i = circles.length - 1; i >= 0; i--) {
+                const circle = circles[i];
+
+                if (circle.locked) continue;
+
+                // Apply gravity (water gravity - slower)
                 circle.vy += GRAVITY;
 
                 // Apply pressure forces
                 if (keys.left) {
-                    circle.vy -= PRESSURE_FORCE * 0.3;
+                    circle.vy -= PRESSURE_FORCE * 0.2;
                     // Push to the right
                     circle.vx += LATERAL_FORCE;
                 }
                 if (keys.right) {
-                    circle.vy -= PRESSURE_FORCE * 0.3;
+                    circle.vy -= PRESSURE_FORCE * 0.2;
                     // Push to the left
                     circle.vx -= LATERAL_FORCE;
                 }
 
-                // Apply damping (air resistance)
+                // Apply damping (water resistance)
                 circle.vx *= DAMPING;
                 circle.vy *= DAMPING;
 
                 // Update position
                 circle.x += circle.vx;
                 circle.y += circle.vy;
+
+                // Check pole collision first
+                checkPoleCollision(circle);
 
                 // Boundary collisions
                 if (circle.x < CIRCLE_RADIUS) {
@@ -203,88 +292,101 @@
                     circle.y = canvas.height - CIRCLE_RADIUS;
                     circle.vy *= -0.3;
                 }
-                if (circle.y < CIRCLE_RADIUS) {
-                    circle.y = CIRCLE_RADIUS;
-                    circle.vy *= -0.3;
+
+                // Check if circle entered the pole
+                if (isInPoleZone(circle)) {
+                    circle.inPole = true;
+
+                    // Lock circle in pole and position it
+                    const stackPosition = circlesInPole.length;
+                    circle.locked = true;
+                    circle.x = POLE_X + POLE_WIDTH / 2;
+                    circle.y = POLE_Y + POLE_HEIGHT - CIRCLE_RADIUS - (stackPosition * CIRCLE_RADIUS * 2);
+                    circle.vx = 0;
+                    circle.vy = 0;
+
+                    // Add to pole array and remove from active circles
+                    circlesInPole.push(circle);
+                    circles.splice(i, 1);
+
+                    // Update score display
+                    scoreDisplay.textContent = `Circles in Pole: ${circlesInPole.length}`;
                 }
-
-                // Check if in target zone
-                circle.inZone = isInTargetZone(circle);
-            });
-
-            // Score if both circles in zone
-            if (circles[0].inZone && circles[1].inZone) {
-                timeInZone++;
-                score += 10;
-            } else {
-                timeInZone = 0;
             }
         }
 
-        // Draw everything
+        // Draw function
         function draw() {
-            // Background
+            // Background - ocean theme
             ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Target zone
-            const zoneAlpha = (circles[0].inZone && circles[1].inZone) ? 0.3 : 0.1;
-            ctx.fillStyle = `rgba(0, 255, 136, ${zoneAlpha})`;
-            ctx.fillRect(TARGET_ZONE_X, 0, TARGET_ZONE_WIDTH, canvas.height);
-            ctx.strokeStyle = '#00ff88';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([5, 5]);
-            ctx.strokeRect(TARGET_ZONE_X, 0, TARGET_ZONE_WIDTH, canvas.height);
-            ctx.setLineDash([]);
+            // Water effect
+            ctx.fillStyle = 'rgba(0, 100, 150, 0.1)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Target zone label
-            ctx.fillStyle = '#00ff88';
-            ctx.font = '14px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('TARGET', canvas.width / 2, 20);
+            // Draw pole
+            drawPole();
 
             // Pressure indicators
             const leftPressure = keys.left ? 1 : 0;
             const rightPressure = keys.right ? 1 : 0;
             drawPressureIndicators(leftPressure, rightPressure);
 
-            // Draw circles
+            // Draw active circles
             circles.forEach(circle => {
-                // Glow effect if in zone
-                if (circle.inZone) {
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = circle.color;
+                if (!circle.locked) {
+                    // Glow effect when moving fast
+                    if (Math.abs(circle.vy) > 1) {
+                        ctx.shadowBlur = 15;
+                        ctx.shadowColor = circle.color;
+                    }
+
+                    ctx.fillStyle = circle.color;
+                    ctx.beginPath();
+                    ctx.arc(circle.x, circle.y, CIRCLE_RADIUS, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#fff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.shadowBlur = 0;
+
+                    // Velocity vectors
+                    if (Math.abs(circle.vx) > 0.5 || Math.abs(circle.vy) > 0.5) {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(circle.x, circle.y);
+                        ctx.lineTo(circle.x + circle.vx * 4, circle.y + circle.vy * 4);
+                        ctx.stroke();
+                    }
                 }
+            });
+
+            // Draw locked circles in pole
+            circlesInPole.forEach(circle => {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = '#00ff88';
 
                 ctx.fillStyle = circle.color;
                 ctx.beginPath();
                 ctx.arc(circle.x, circle.y, CIRCLE_RADIUS, 0, Math.PI * 2);
                 ctx.fill();
 
-                ctx.strokeStyle = circle.inZone ? '#fff' : '#666';
-                ctx.lineWidth = circle.inZone ? 3 : 2;
+                ctx.strokeStyle = '#00ff88';
+                ctx.lineWidth = 3;
                 ctx.stroke();
 
                 ctx.shadowBlur = 0;
-
-                // Velocity vectors (debug visualization)
-                if (Math.abs(circle.vx) > 0.5 || Math.abs(circle.vy) > 0.5) {
-                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-                    ctx.lineWidth = 2;
-                    ctx.beginPath();
-                    ctx.moveTo(circle.x, circle.y);
-                    ctx.lineTo(circle.x + circle.vx * 3, circle.y + circle.vy * 3);
-                    ctx.stroke();
-                }
             });
 
-            // Combo indicator
-            if (timeInZone > 0) {
-                ctx.fillStyle = '#00ff88';
-                ctx.font = 'bold 16px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText(`COMBO: ${Math.floor(timeInZone / 10)}`, canvas.width / 2, 50);
-            }
+            // Score indicator
+            ctx.fillStyle = '#00ff88';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'left';
+            ctx.fillText(`In Pole: ${circlesInPole.length}`, 10, 20);
         }
 
         // Main game loop
@@ -294,8 +396,6 @@
             updatePhysics();
             draw();
 
-            scoreDisplay.textContent = `Score: ${score}`;
-
             gameLoop = requestAnimationFrame(update);
         }
 
@@ -303,26 +403,13 @@
         function startGame() {
             console.log('[Pressure Game] Start button clicked!');
 
-            // Stop any existing game loop
-            if (gameLoop) {
-                cancelAnimationFrame(gameLoop);
-                gameLoop = null;
-            }
-
             gameRunning = true;
-            score = 0;
-            timeInZone = 0;
+            circlesInPole = [];
 
-            // Reset circles to starting positions
-            circles[0].x = 100;
-            circles[0].y = 100;
-            circles[0].vx = 0;
-            circles[0].vy = 0;
-
-            circles[1].x = 200;
-            circles[1].y = 100;
-            circles[1].vx = 0;
-            circles[1].vy = 0;
+            // Reset circles to starting positions above buttons
+            circles.length = 0;
+            circles.push(spawnCircle('left'));
+            circles.push(spawnCircle('right'));
 
             startBtn.textContent = 'Running...';
             startBtn.disabled = true;
