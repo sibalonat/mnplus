@@ -79,7 +79,9 @@ function createPostCard(post, index) {
 
     // Link to separate post page instead of inline loading
     card.addEventListener('click', () => {
-        window.location.href = `post.html?post=${post.filename}`;
+        // Remove .md extension from URL for cleaner links
+        const postSlug = post.filename.replace('.md', '');
+        window.location.href = `post.html?post=${postSlug}`;
     });
 
     return card;

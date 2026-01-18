@@ -142,7 +142,9 @@
       // Update SEO meta tags
       function updateSEOMeta(post) {
         const baseUrl = "https://sibalonat.github.io/mnplus/";
-        const postUrl = baseUrl + "post.html?post=" + post.filename;
+        // Remove .md extension from URL for cleaner links
+        const postSlug = post.filename.replace(".md", "");
+        const postUrl = baseUrl + "post.html?post=" + postSlug;
 
         // Update title
         document.title = post.title + " - arra.blog";
@@ -213,7 +215,11 @@
 
       async function loadPost(filename) {
         try {
-          const response = await fetch(`posts/${filename}`);
+          // Add .md extension if not present
+          const fullFilename = filename.endsWith(".md")
+            ? filename
+            : filename + ".md";
+          const response = await fetch(`posts/${fullFilename}`);
           if (!response.ok) {
             throw new Error("Failed to load post");
           }
