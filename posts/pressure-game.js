@@ -12,17 +12,19 @@
         const canvas = document.getElementById('pressureGame');
         const ctx = canvas ? canvas.getContext('2d') : null;
         const startBtn = document.getElementById('startPressureGame');
+        const restartBtn = document.getElementById('restartPressureGame');
         const scoreDisplay = document.getElementById('pressureScore');
 
         console.log('[Pressure Game] Elements check:', {
             canvas: !!canvas,
             ctx: !!ctx,
             startBtn: !!startBtn,
+            restartBtn: !!restartBtn,
             scoreDisplay: !!scoreDisplay
         });
 
         // If elements aren't found, retry
-        if (!canvas || !ctx || !startBtn || !scoreDisplay) {
+        if (!canvas || !ctx || !startBtn || !restartBtn || !scoreDisplay) {
             if (retryCount < MAX_RETRIES) {
                 retryCount++;
                 setTimeout(initPressureGame, 200);
@@ -42,7 +44,7 @@
 
         // GAME CONSTANTS
         const GRAVITY = 0.08; // Slower gravity for water simulation
-        const PRESSURE_FORCE = 5;
+        const PRESSURE_FORCE = 20; // Strong pressure for good reach
         const LATERAL_FORCE = 1.8;
         const DAMPING = 0.95; // More damping for water resistance
         const CIRCLE_RADIUS = 15;
@@ -53,12 +55,22 @@
         const BUTTON_LEFT_X = 50; // Position above left button
         const BUTTON_RIGHT_X = canvas.width - 50; // Position above right button
         const START_Y = canvas.height - 50; // Circles start near bottom
+        const MAX_UPWARD_VELOCITY = -18; // High cap for strong upward movement
+        const PRESSURE_RADIUS = 150; // Larger pressure effect radius
+        const PRESSURE_INNER_RADIUS = 100; // Full strength within this radius
+        const CIRCLE_DELETE_TIME = 20000; // 20 seconds in milliseconds
+        const COLLISION_STIFFNESS = 0.8; // How hard circles push each other
+        const MAX_POLE_CAPACITY = Math.floor(POLE_HEIGHT / (CIRCLE_RADIUS * 2)); // Max circles that fit in pole
 
         let circlesInPole = [];
         let gameRunning = false;
         let gameLoop = null;
+        let nextCircleColor = 0; // Track color for new circles
 
         const keys = { left: false, right: false };
+
+        // Available colors for new circles (excluding initial colors)
+        const CIRCLE_COLORS = ['#ff6b6b', '#4ecdc4', '#ffd93d', '#a78bfa', '#fb923c', '#22d3ee', '#f472b6', '#84cc16'];
 
         // Two circles starting above buttons
         const circles = [
@@ -69,7 +81,8 @@
                 vy: 0,
                 color: '#ff6b6b',
                 inPole: false,
-                locked: false
+                locked: false,
+                mass: 1
             },
             {
                 x: BUTTON_RIGHT_X,
@@ -78,7 +91,8 @@
                 vy: 0,
                 color: '#4ecdc4',
                 inPole: false,
-                locked: false
+                locked: false,
+                mass: 1
             }
         ];
 
@@ -230,20 +244,114 @@
             }
         }
 
-        // Spawn new circle at button position
-        function spawnCircle(buttonSide) {
-            const x = buttonSide === 'left' ? BUTTON_LEFT_X : BUTTON_RIGHT_X;
-            const color = buttonSide === 'left' ? '#ff6b6b' : '#4ecdc4';
+        // Spawn new circle at random position
+        function spawnCircle() {
+            // Get next color
+            const color = CIRCLE_COLORS[nextCircleColor % CIRCLE_COLORS.length];
+            nextCircleColor++;
+
+            // Random position in lower half of screen, avoiding edges
+            const x = CIRCLE_RADIUS + 20 + Math.random() * (canvas.width - CIRCLE_RADIUS * 2 - 40);
+            const y = canvas.height / 2 + Math.random() * (canvas.height / 2 - CIRCLE_RADIUS - 50);
 
             return {
                 x: x,
-                y: START_Y,
+                y: y,
                 vx: 0,
                 vy: 0,
                 color: color,
                 inPole: false,
-                locked: false
+                locked: false,
+                mass: 1
             };
+        }
+
+        // Calculate distance between two points
+        function distance(x1, y1, x2, y2) {
+            return Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+        }
+
+        // Handle circle-to-circle collisions (no overlap)
+        function handleCircleCollisions() {
+            for (let i = 0; i < circles.length; i++) {
+                for (let j = i + 1; j < circles.length; j++) {
+                    const c1 = circles[i];
+                    const c2 = circles[j];
+
+                    if (c1.locked || c2.locked) continue;
+
+                    const dist = distance(c1.x, c1.y, c2.x, c2.y);
+                    const minDist = CIRCLE_RADIUS * 2;
+
+                    if (dist < minDist) {
+                        // Circles are overlapping, push them apart
+                        const overlap = minDist - dist;
+                        const angle = Math.atan2(c2.y - c1.y, c2.x - c1.x);
+
+                        // Push apart based on mass (equal mass = equal push)
+                        const totalMass = c1.mass + c2.mass;
+                        const push1 = overlap * (c2.mass / totalMass);
+                        const push2 = overlap * (c1.mass / totalMass);
+
+                        c1.x -= Math.cos(angle) * push1;
+                        c1.y -= Math.sin(angle) * push1;
+                        c2.x += Math.cos(angle) * push2;
+                        c2.y += Math.sin(angle) * push2;
+
+                        // Apply collision response to velocities
+                        const dvx = c2.vx - c1.vx;
+                        const dvy = c2.vy - c1.vy;
+                        const dotProduct = (dvx * Math.cos(angle) + dvy * Math.sin(angle));
+
+                        if (dotProduct < 0) continue; // Moving apart already
+
+                        const impulse = (2 * dotProduct) / totalMass;
+
+                        c1.vx += impulse * c2.mass * Math.cos(angle) * COLLISION_STIFFNESS;
+                        c1.vy += impulse * c2.mass * Math.sin(angle) * COLLISION_STIFFNESS;
+                        c2.vx -= impulse * c1.mass * Math.cos(angle) * COLLISION_STIFFNESS;
+                        c2.vy -= impulse * c1.mass * Math.sin(angle) * COLLISION_STIFFNESS;
+                    }
+                }
+            }
+        }
+
+        // Handle collisions between active circles and pole circles
+        function handlePoleCircleCollisions() {
+            for (let i = 0; i < circles.length; i++) {
+                const activeCircle = circles[i];
+                if (activeCircle.locked) continue;
+
+                // Allow circles to pass through pole circles if they're near pole entrance and moving up
+                const isNearPoleEntrance = activeCircle.y <= POLE_Y + POLE_HEIGHT + CIRCLE_RADIUS * 3 &&
+                    activeCircle.y >= POLE_Y + POLE_HEIGHT - CIRCLE_RADIUS;
+                const isMovingUpward = activeCircle.vy < 0;
+                const isInPoleHorizontally = activeCircle.x >= POLE_X && activeCircle.x <= POLE_X + POLE_WIDTH;
+
+                if (isNearPoleEntrance && isMovingUpward && isInPoleHorizontally) {
+                    continue; // Allow passage when entering from below
+                }
+
+                for (let j = 0; j < circlesInPole.length; j++) {
+                    const poleCircle = circlesInPole[j];
+
+                    const dist = distance(activeCircle.x, activeCircle.y, poleCircle.x, poleCircle.y);
+                    const minDist = CIRCLE_RADIUS * 2;
+
+                    if (dist < minDist) {
+                        // Push the active circle away
+                        const overlap = minDist - dist;
+                        const angle = Math.atan2(activeCircle.y - poleCircle.y, activeCircle.x - poleCircle.x);
+
+                        activeCircle.x += Math.cos(angle) * overlap;
+                        activeCircle.y += Math.sin(angle) * overlap;
+
+                        // Bounce effect
+                        activeCircle.vx += Math.cos(angle) * 2;
+                        activeCircle.vy += Math.sin(angle) * 2;
+                    }
+                }
+            }
         }
 
         // Update physics
@@ -256,16 +364,45 @@
                 // Apply gravity (water gravity - slower)
                 circle.vy += GRAVITY;
 
-                // Apply pressure forces
-                if (keys.left) {
-                    circle.vy -= PRESSURE_FORCE * 0.2;
-                    // Push to the right
-                    circle.vx += LATERAL_FORCE;
+                // Apply localized pressure forces based on proximity to buttons
+                const distToLeft = distance(circle.x, circle.y, BUTTON_LEFT_X, canvas.height);
+                const distToRight = distance(circle.x, circle.y, BUTTON_RIGHT_X, canvas.height);
+
+                if (keys.left && distToLeft < PRESSURE_RADIUS) {
+                    // Non-linear pressure: full strength until INNER_RADIUS, then falloff
+                    let strength;
+                    if (distToLeft < PRESSURE_INNER_RADIUS) {
+                        strength = 1.0; // Full strength in inner zone
+                    } else {
+                        // Gradual falloff from inner radius to outer radius
+                        const falloffDist = distToLeft - PRESSURE_INNER_RADIUS;
+                        const falloffRange = PRESSURE_RADIUS - PRESSURE_INNER_RADIUS;
+                        strength = 1.0 - (falloffDist / falloffRange);
+                    }
+                    circle.vy -= PRESSURE_FORCE * 0.5 * strength;
+                    // Push to the right based on proximity
+                    circle.vx += LATERAL_FORCE * strength;
                 }
-                if (keys.right) {
-                    circle.vy -= PRESSURE_FORCE * 0.2;
-                    // Push to the left
-                    circle.vx -= LATERAL_FORCE;
+
+                if (keys.right && distToRight < PRESSURE_RADIUS) {
+                    // Non-linear pressure: full strength until INNER_RADIUS, then falloff
+                    let strength;
+                    if (distToRight < PRESSURE_INNER_RADIUS) {
+                        strength = 1.0; // Full strength in inner zone
+                    } else {
+                        // Gradual falloff from inner radius to outer radius
+                        const falloffDist = distToRight - PRESSURE_INNER_RADIUS;
+                        const falloffRange = PRESSURE_RADIUS - PRESSURE_INNER_RADIUS;
+                        strength = 1.0 - (falloffDist / falloffRange);
+                    }
+                    circle.vy -= PRESSURE_FORCE * 0.5 * strength;
+                    // Push to the left based on proximity
+                    circle.vx -= LATERAL_FORCE * strength;
+                }
+
+                // Cap upward velocity to prevent circles from flying off
+                if (circle.vy < MAX_UPWARD_VELOCITY) {
+                    circle.vy = MAX_UPWARD_VELOCITY;
                 }
 
                 // Apply damping (water resistance)
@@ -292,24 +429,73 @@
                     circle.y = canvas.height - CIRCLE_RADIUS;
                     circle.vy *= -0.3;
                 }
+            }
 
-                // Check if circle entered the pole
-                if (isInPoleZone(circle)) {
-                    circle.inPole = true;
+            // Check for pole entry BEFORE collision handling
+            for (let i = circles.length - 1; i >= 0; i--) {
+                const circle = circles[i];
+                if (circle.locked) continue;
 
-                    // Lock circle in pole and position it
-                    const stackPosition = circlesInPole.length;
-                    circle.locked = true;
-                    circle.x = POLE_X + POLE_WIDTH / 2;
-                    circle.y = POLE_Y + POLE_HEIGHT - CIRCLE_RADIUS - (stackPosition * CIRCLE_RADIUS * 2);
-                    circle.vx = 0;
-                    circle.vy = 0;
+                // Check if circle entered the pole (more lenient check)
+                if (isInPoleZone(circle) && circle.vy < 0) { // Only enter if moving upward
+                    // Check if there's space in the pole
+                    if (circlesInPole.length < MAX_POLE_CAPACITY) {
+                        circle.inPole = true;
 
-                    // Add to pole array and remove from active circles
-                    circlesInPole.push(circle);
-                    circles.splice(i, 1);
+                        // Find position in pole (stack from bottom, account for existing circles)
+                        let targetY = POLE_Y + POLE_HEIGHT - CIRCLE_RADIUS;
 
-                    // Update score display
+                        // Push existing circles up if needed
+                        for (let j = circlesInPole.length - 1; j >= 0; j--) {
+                            const existingCircle = circlesInPole[j];
+                            if (existingCircle.y > targetY - CIRCLE_RADIUS * 2) {
+                                existingCircle.y -= CIRCLE_RADIUS * 2; // Push up
+                                targetY = existingCircle.y - CIRCLE_RADIUS * 2;
+                            }
+                        }
+
+                        // Lock circle in pole and position it
+                        circle.locked = true;
+                        circle.x = POLE_X + POLE_WIDTH / 2;
+                        circle.y = targetY;
+                        circle.vx = 0;
+                        circle.vy = 0;
+                        circle.enteredTime = Date.now(); // Track when it entered
+
+                        // Add to pole array and remove from active circles
+                        circlesInPole.push(circle);
+                        circles.splice(i, 1);
+
+                        // Spawn a new circle
+                        circles.push(spawnCircle());
+
+                        // Update score display
+                        scoreDisplay.textContent = `Circles in Pole: ${circlesInPole.length}`;
+                    } else {
+                        // Pole is full, bounce the circle back down
+                        circle.vy = Math.abs(circle.vy) * 0.5; // Reverse direction and dampen
+                        circle.y = POLE_Y + POLE_HEIGHT + CIRCLE_RADIUS + 2; // Push below pole entrance
+                    }
+                }
+            }
+
+            // Handle circle collisions
+            handleCircleCollisions();
+            handlePoleCircleCollisions();
+
+            // Remove circles that have been in pole for more than 1 minute
+            const currentTime = Date.now();
+            for (let i = circlesInPole.length - 1; i >= 0; i--) {
+                const circle = circlesInPole[i];
+                if (currentTime - circle.enteredTime > CIRCLE_DELETE_TIME) {
+                    circlesInPole.splice(i, 1);
+
+                    // Reposition remaining circles to fill the gap
+                    for (let j = 0; j < circlesInPole.length; j++) {
+                        circlesInPole[j].y = POLE_Y + POLE_HEIGHT - CIRCLE_RADIUS - (j * CIRCLE_RADIUS * 2);
+                    }
+
+                    // Update score
                     scoreDisplay.textContent = `Circles in Pole: ${circlesInPole.length}`;
                 }
             }
@@ -366,7 +552,7 @@
             });
 
             // Draw locked circles in pole
-            circlesInPole.forEach(circle => {
+            circlesInPole.forEach((circle, index) => {
                 ctx.shadowBlur = 10;
                 ctx.shadowColor = '#00ff88';
 
@@ -380,6 +566,16 @@
                 ctx.stroke();
 
                 ctx.shadowBlur = 0;
+
+                // Draw timer for each circle in pole
+                const timeElapsed = Date.now() - circle.enteredTime;
+                const timeRemaining = CIRCLE_DELETE_TIME - timeElapsed;
+                const secondsRemaining = Math.ceil(timeRemaining / 1000);
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 10px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(secondsRemaining + 's', circle.x, circle.y + 4);
             });
 
             // Score indicator
@@ -387,6 +583,10 @@
             ctx.font = 'bold 14px Arial';
             ctx.textAlign = 'left';
             ctx.fillText(`In Pole: ${circlesInPole.length}`, 10, 20);
+
+            // Active circles count
+            ctx.fillStyle = '#fff';
+            ctx.fillText(`Active: ${circles.length}`, 10, 40);
         }
 
         // Main game loop
@@ -405,14 +605,34 @@
 
             gameRunning = true;
             circlesInPole = [];
+            nextCircleColor = 0;
 
             // Reset circles to starting positions above buttons
             circles.length = 0;
-            circles.push(spawnCircle('left'));
-            circles.push(spawnCircle('right'));
+            circles.push({
+                x: BUTTON_LEFT_X,
+                y: START_Y,
+                vx: 0,
+                vy: 0,
+                color: CIRCLE_COLORS[0],
+                inPole: false,
+                locked: false,
+                mass: 1
+            });
+            circles.push({
+                x: BUTTON_RIGHT_X,
+                y: START_Y,
+                vx: 0,
+                vy: 0,
+                color: CIRCLE_COLORS[1],
+                inPole: false,
+                locked: false,
+                mass: 1
+            });
+            nextCircleColor = 2;
 
-            startBtn.textContent = 'Running...';
-            startBtn.disabled = true;
+            startBtn.style.display = 'none';
+            restartBtn.style.display = 'inline-block';
 
             console.log('[Pressure Game] Simulation starting...');
             update();
@@ -425,11 +645,47 @@
                 cancelAnimationFrame(gameLoop);
                 gameLoop = null;
             }
-            startBtn.textContent = 'Start Simulation';
-            startBtn.disabled = false;
+
+            // Reset all game state
+            circles.length = 0;
+            circlesInPole = [];
+            nextCircleColor = 0;
+            keys.left = false;
+            keys.right = false;
+
+            // Reset initial circles
+            circles.push({
+                x: BUTTON_LEFT_X,
+                y: START_Y,
+                vx: 0,
+                vy: 0,
+                color: CIRCLE_COLORS[0],
+                inPole: false,
+                locked: false,
+                mass: 1
+            });
+            circles.push({
+                x: BUTTON_RIGHT_X,
+                y: START_Y,
+                vx: 0,
+                vy: 0,
+                color: CIRCLE_COLORS[1],
+                inPole: false,
+                locked: false,
+                mass: 1
+            });
+            nextCircleColor = 2;
+
+            // Update UI
+            scoreDisplay.textContent = 'Circles in Pole: 0';
+            drawInitial();
+
+            // Start game again
+            startGame();
         }
 
         startBtn.addEventListener('click', startGame);
+        restartBtn.addEventListener('click', resetGame);
 
         // Draw initial state
         drawInitial();

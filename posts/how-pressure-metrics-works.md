@@ -50,9 +50,19 @@ Below is a physics simulation that demonstrates pressure mechanics. Two circles 
 <div class="game-container" style="max-width: min(400px, 90vw); margin: 40px auto; text-align: center; padding: min(20px, 5vw); background: #1a1a1a; border-radius: 10px; box-sizing: border-box;">
   <h4 style="margin-bottom: 15px; color: #00d4ff; font-size: clamp(16px, 4vw, 20px);">Pressure Physics Simulator</h4>
   <canvas id="pressureGame" width="300" height="400" style="border: 3px solid #00d4ff; background: #0a0a0a; display: block; margin: 0 auto; max-width: 100%; height: auto; width: auto;"></canvas>
-  <p style="margin-top: 10px; color: #999; font-size: clamp(12px, 3vw, 14px);">Use ← → arrows to apply pressure and guide circles to the target!</p>
-  <button id="startPressureGame" style="padding: 12px 30px; background: #00d4ff; color: #000; border: none; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; font-size: clamp(14px, 3.5vw, 16px); min-height: 44px; touch-action: manipulation;">Start Simulation</button>
-  <p id="pressureScore" style="margin-top: 10px; font-weight: bold; color: #00ff88; font-size: clamp(16px, 4vw, 18px);">Score: 0</p>
+  <div style="margin-top: 15px; padding: 10px; background: rgba(0, 212, 255, 0.1); border-radius: 5px; border: 1px solid rgba(0, 212, 255, 0.3);">
+    <p style="margin: 5px 0; color: #00d4ff; font-size: clamp(12px, 3vw, 14px); font-weight: bold;">Instructions:</p>
+    <p style="margin: 5px 0; color: #ccc; font-size: clamp(11px, 2.8vw, 13px);">• Use ← → arrow keys to apply localized pressure</p>
+    <p style="margin: 5px 0; color: #ccc; font-size: clamp(11px, 2.8vw, 13px);">• Guide circles into the green goal zone at the top</p>
+    <p style="margin: 5px 0; color: #ccc; font-size: clamp(11px, 2.8vw, 13px);">• New circles spawn as you score (different colors!)</p>
+    <p style="margin: 5px 0; color: #ccc; font-size: clamp(11px, 2.8vw, 13px);">• Circles auto-delete after 60 seconds in the goal</p>
+    <p style="margin: 5px 0; color: #ff6b6b; font-size: clamp(11px, 2.8vw, 13px);">• Pressure only affects nearby circles - aim carefully!</p>
+  </div>
+  <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
+    <button id="startPressureGame" style="padding: 12px 30px; background: #00d4ff; color: #000; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: clamp(14px, 3.5vw, 16px); min-height: 44px; touch-action: manipulation;">Start Simulation</button>
+    <button id="restartPressureGame" style="padding: 12px 30px; background: #ff6b6b; color: #fff; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: clamp(14px, 3.5vw, 16px); min-height: 44px; touch-action: manipulation; display: none;">Restart Game</button>
+  </div>
+  <p id="pressureScore" style="margin-top: 10px; font-weight: bold; color: #00ff88; font-size: clamp(16px, 4vw, 18px);">Circles in Pole: 0</p>
 </div>
 
 <script type="text/javascript" src="posts/pressure-game.js"></script>
@@ -62,12 +72,17 @@ Below is a physics simulation that demonstrates pressure mechanics. Two circles 
 In the simulation above:
 
 1. **Gravity** constantly pulls the circles downward
-2. **Pressure application** (via arrow keys) creates upward force
-3. **Directional force** depends on where you apply pressure:
-   - Left arrow: pushes circles up and to the right
-   - Right arrow: pushes circles up and to the left
-4. **Target zone** in the middle is where you want both circles
-5. **Balance** is key - too much pressure on one side throws off equilibrium
+2. **Localized pressure application** creates upward force only on nearby circles:
+   - Left arrow: applies pressure in a radius around the left button position
+   - Right arrow: applies pressure in a radius around the right button position
+   - Pressure strength decreases with distance from the button
+3. **Directional force** depends on where you apply pressure relative to the circle
+4. **Target zone** (green pole at top) is where you want to guide circles
+5. **Balance and precision** are key - too much pressure sends circles flying off-screen
+6. **Collision physics** - circles cannot overlap and push each other realistically
+7. **Stack mechanics** - circles in the goal zone stack from bottom up, pushing earlier ones higher
+8. **New circles spawn** automatically when one enters the goal (in different colors)
+9. **Time limit** - circles automatically delete after 60 seconds in the goal zone
 
 ### The Physics Behind It
 
@@ -76,10 +91,35 @@ The simulation models several real physics concepts:
 ```javascript
 // Simplified physics model
 velocity.y += gravity; // Gravity accelerates downward
-velocity.y -= pressureForce; // Pressure pushes upward
-velocity.x += lateralForce; // Side pressure creates lateral movement
+
+// Localized pressure based on distance to button
+const distToButton = distance(circle.x, circle.y, buttonX, buttonY);
+if (distToButton < PRESSURE_RADIUS) {
+  const strength = 1 - distToButton / PRESSURE_RADIUS;
+  velocity.y -= pressureForce * strength; // Pressure pushes upward
+  velocity.x += lateralForce * strength; // Lateral movement
+}
+
+// Cap maximum upward velocity to prevent loss
+if (velocity.y < MAX_UPWARD_VELOCITY) {
+  velocity.y = MAX_UPWARD_VELOCITY;
+}
+
 position += velocity * deltaTime; // Update position based on velocity
 velocity *= damping; // Friction/air resistance slows movement
+
+// Circle collision detection and response
+if (distance(c1, c2) < radius * 2) {
+  // Push circles apart and exchange momentum
+  applyCollisionResponse(c1, c2);
+}
+
+// Stack mechanics in goal zone
+if (enteringGoal) {
+  pushExistingCirclesUp();
+  placeCircleAtBottom();
+  spawnNewCircle();
+}
 ```
 
 ## Real-World Applications
