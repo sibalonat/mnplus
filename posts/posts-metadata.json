@@ -6,7 +6,8 @@
             "date": "2026-01-17",
             "author": "Marin Nikolli",
             "category": "gravity",
-            "excerpt": "A personal journey from childhood curiosity to creating arra.blog - exploring early memories from Albania and the spark that ignited a passion for learning and technology."
+            "excerpt": "A personal journey from childhood curiosity to creating arra.blog - exploring early memories from Albania and the spark that ignited a passion for learning and technology.",
+            "image": "assets/default-share-image.png"
         },
         {
             "title": "In the Name of Curiosity",
@@ -14,7 +15,8 @@
             "date": "2026-01-14",
             "author": "Marin Nikolli",
             "category": "start",
-            "excerpt": "A personal journey from childhood curiosity to creating arra.blog - exploring early memories from Albania and the spark that ignited a passion for learning and technology."
+            "excerpt": "A personal journey from childhood curiosity to creating arra.blog - exploring early memories from Albania and the spark that ignited a passion for learning and technology.",
+            "image": "assets/default-share-image.png"
         }
     ]
 }
