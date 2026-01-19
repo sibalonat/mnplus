@@ -20,21 +20,21 @@
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="article" />
-    <meta property="og:url" content="" id="meta-og-url" />
+    <meta property="og:url" content="https://sibalonat.github.io/mnplus/" id="meta-og-url" />
     <meta property="og:title" content="Post - arra.blog" id="meta-og-title" />
     <meta
       property="og:description"
       content="Read the latest post on arra.blog"
       id="meta-og-description"
     />
-    <meta property="og:image" content="" id="meta-og-image" />
+    <meta property="og:image" content="https://sibalonat.github.io/mnplus/assets/default-share-image.png" id="meta-og-image" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="arra.blog" />
 
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="" id="meta-twitter-url" />
+    <meta property="twitter:url" content="https://sibalonat.github.io/mnplus/" id="meta-twitter-url" />
     <meta
       property="twitter:title"
       content="Post - arra.blog"
@@ -45,7 +45,7 @@
       content="Read the latest post on arra.blog"
       id="meta-twitter-description"
     />
-    <meta property="twitter:image" content="" id="meta-twitter-image" />
+    <meta property="twitter:image" content="https://sibalonat.github.io/mnplus/assets/default-share-image.png" id="meta-twitter-image" />
 
     <!-- Article metadata -->
     <meta
@@ -129,7 +129,9 @@
           if (!response.ok) return;
 
           const data = await response.json();
-          const postMeta = data.posts.find((p) => p.filename === filename);
+          // Handle both with and without .md extension
+          const fullFilename = filename.endsWith(".md") ? filename : filename + ".md";
+          const postMeta = data.posts.find((p) => p.filename === fullFilename);
 
           if (postMeta) {
             updateSEOMeta(postMeta);
