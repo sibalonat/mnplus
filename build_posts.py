@@ -111,6 +111,26 @@ def build():
     
     print(f'📝 Found {len(posts)} post(s) to generate\n')
     
+    # Track which HTML files should exist
+    expected_files = set()
+    for post in posts:
+        output_path = get_post_path(post['date'], post['filename'])
+        expected_files.add(output_path)
+    
+    # Find and delete orphaned HTML files
+    deleted_count = 0
+    posts_dir = Path(OUTPUT_DIR)
+    if posts_dir.exists():
+        for html_file in posts_dir.rglob('*.html'):
+            # Skip if it's not in a YYYY/MM structure
+            parts = html_file.parts
+            if len(parts) >= 4 and parts[-3].isdigit() and parts[-2].isdigit():
+                file_path = str(html_file)
+                if file_path not in expected_files:
+                    html_file.unlink()
+                    print(f'🗑️  Deleted orphaned: {file_path}')
+                    deleted_count += 1
+    
     success_count = 0
     error_count = 0
     
@@ -127,6 +147,8 @@ def build():
     print('\n' + '=' * 50)
     print('✨ Build complete!')
     print(f'   Success: {success_count}')
+    if deleted_count > 0:
+        print(f'   Deleted: {deleted_count}')
     if error_count > 0:
         print(f'   Errors: {error_count}')
     print('=' * 50)
