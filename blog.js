@@ -79,9 +79,10 @@ function createPostCard(post, index) {
 
     // Link to separate post page instead of inline loading
     card.addEventListener('click', () => {
-        // Remove .md extension from URL for cleaner links
+        // Use static generated page organized by year/month
+        const [year, month] = post.date.split('-');
         const postSlug = post.filename.replace('.md', '');
-        window.location.href = `post.html?post=${postSlug}`;
+        window.location.href = `posts/${year}/${month}/${postSlug}.html`;
     });
 
     return card;

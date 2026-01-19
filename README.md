@@ -89,6 +89,18 @@ Add your post information to `posts/posts-metadata.json`:
 
 **Note**: Posts are sorted by date (newest first), so make sure to use the format `YYYY-MM-DD`.
 
+#### Build the static pages
+
+Run the build script to generate SEO-optimized HTML pages:
+
+```bash
+python3 build_posts.py
+```
+
+This creates static HTML files at `posts/YYYY/MM/post-slug.html` with proper meta tags for social media sharing.
+
+**Important**: Commit both the `.md` file AND the generated `.html` files to GitHub for proper SEO.
+
 ## Project Structure
 
 ```
