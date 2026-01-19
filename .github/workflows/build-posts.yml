@@ -1,0 +1,44 @@
+name: Build Static Post Pages
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'posts/*.md'
+      - 'posts/posts-metadata.json'
+      - 'post-template.html'
+      - 'build_posts.py'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+      
+      - name: Run build script
+        run: python3 build_posts.py
+      
+      - name: Check for changes
+        id: verify_diff
+        run: |
+          git diff --quiet . || echo "changed=true" >> $GITHUB_OUTPUT
+      
+      - name: Commit and push if changes
+        if: steps.verify_diff.outputs.changed == 'true'
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add posts/
+          git commit -m "🤖 Auto-generate static post pages [skip ci]"
+          git push

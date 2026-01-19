@@ -89,9 +89,9 @@ Add your post information to `posts/posts-metadata.json`:
 
 **Note**: Posts are sorted by date (newest first), so make sure to use the format `YYYY-MM-DD`.
 
-#### Build the static pages
+#### Build the static pages (Optional - Automated via GitHub Actions)
 
-Run the build script to generate SEO-optimized HTML pages:
+The repository includes a GitHub Action that automatically generates static HTML pages when you push changes. However, you can also build locally:
 
 ```bash
 python3 build_posts.py
@@ -99,7 +99,12 @@ python3 build_posts.py
 
 This creates static HTML files at `posts/YYYY/MM/post-slug.html` with proper meta tags for social media sharing.
 
-**Important**: Commit both the `.md` file AND the generated `.html` files to GitHub for proper SEO.
+**The GitHub Action will automatically:**
+- Run when you push new posts or update metadata
+- Generate the static HTML files
+- Commit and push them back to your repository
+
+You only need to commit your `.md` file and `posts-metadata.json` changes!
 
 ## Project Structure
 

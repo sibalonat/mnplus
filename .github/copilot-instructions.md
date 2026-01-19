@@ -46,11 +46,17 @@ Both `post.html` and markdown posts support embedded `<script>` tags. The `execu
 ### Adding New Blog Posts
 1. Create `.md` file in `posts/` directory
 2. Add metadata entry to `posts/posts-metadata.json` (must include `date` field in `YYYY-MM-DD` format)
-3. **Run the build script**: `python3 build_posts.py`
-4. Commit both the `.md` file and generated `.html` file in `posts/YYYY/MM/`
+3. **Option A - Automated (Recommended)**: 
+   - Commit and push changes
+   - GitHub Actions automatically runs `build_posts.py` and commits generated HTML files
+4. **Option B - Manual**:
+   - Run `python3 build_posts.py` locally
+   - Commit both `.md` file and generated `.html` files
 5. For interactive posts: Create separate `.js` file and reference in Markdown via `<script src="posts/yourfile.js"></script>`
 
 **Why the build step matters**: Social media crawlers (LinkedIn, Twitter, Facebook) don't execute JavaScript. The build script generates static HTML files with proper meta tags baked in, ensuring your posts show correct titles, descriptions, and images when shared.
+
+**Automated Build**: The `.github/workflows/build-posts.yml` workflow triggers on any changes to posts, metadata, or templates, automatically generating and committing the static pages.
 
 **Interactive Post Template**:
 ```markdown
