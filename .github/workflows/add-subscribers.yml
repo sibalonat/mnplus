@@ -1,11 +1,12 @@
-name: Add Subscriber
+name: Add Subscriber (Manual)
 
-# Manual workflow to manage blog subscribers
+# Manual workflow - Check Formspark dashboard for new submissions
+# Then run this workflow to add them to the list
 on:
   workflow_dispatch:
     inputs:
       email:
-        description: 'Email address to add'
+        description: 'Email address to add (check Formspark dashboard for new submissions)'
         required: true
         type: string
       action:
