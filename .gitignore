@@ -23,5 +23,5 @@ npm-debug.log*
 WEBHOOK_TRANSFORMER.md
 FORMSPARK_WEBHOOK_SETUP.md
 
-# Subscriber data managed by GitHub Actions
-subscribers.json
+# Subscriber data is committed to repo and managed by GitHub Actions
+# subscribers.json
