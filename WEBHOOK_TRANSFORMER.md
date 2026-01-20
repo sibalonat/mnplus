@@ -26,6 +26,8 @@ Formspark sends webhooks in its own format, but GitHub's `repository_dispatch` A
 3. Paste this code:
 
 ```javascript
+import axios from 'axios';
+
 export default defineComponent({
   async run({ steps, $ }) {
     // Formspark can send data in different formats, let's handle all cases
@@ -46,36 +48,71 @@ export default defineComponent({
     
     console.log(`Processing subscription for: ${email}`);
     
-    // Trigger GitHub Actions workflow using WORKFLOW_TOKEN
-    const response = await $.http.post({
-      url: "https://api.github.com/repos/sibalonat/mnplus/dispatches",
-      headers: {
-        "Accept": "application/vnd.github.v3+json",
-        "Authorization": `Bearer ${process.env.WORKFLOW_TOKEN}`,
-        "Content-Type": "application/json",
-        "User-Agent": "Pipedream-Formspark-Bridge"
-      },
-      data: {
-        event_type: "formspark_submission",
-        client_payload: { 
-          email: email 
-        }
-      }
-    });
+    // Debug: Check if token is set (remove after debugging)
+    console.log(`Token configured: ${!!process.env.WORKFLOW_TOKEN}`);
     
-    console.log(`GitHub API response: ${response.status}`);
-    return { success: true, email, status: response.status };
+    // Trigger GitHub Actions workflow using WORKFLOW_TOKEN
+    try {
+      console.log('🚀 Calling GitHub API to trigger workflow...');
+      
+      const response = await axios.post(
+        'https://api.github.com/repos/sibalonat/mnplus/dispatches',
+        {
+          event_type: 'formspark_submission',
+          client_payload: { email }
+        },
+        {
+          headers: {
+            'Accept': 'application/vnd.github.v3+json',
+            'Authorization': `Bearer ${process.env.WORKFLOW_TOKEN}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'Pipedream-Formspark-Bridge'
+          }
+        }
+      );
+      
+      console.log(`✅ GitHub API response: ${response.status} ${response.statusText}`);
+      console.log(`Response data:`, response.data);
+      return { success: true, email, status: response.status };
+    } catch (error) {
+      console.error('❌ GitHub API error:');
+      console.error('Status:', error.response?.status);
+      console.error('Data:', error.response?.data);
+      console.error('Message:', error.message);
+      throw error;
+    }
   }
 });
 ```
 
-4. Add GitHub Token as environment variable:
-   - Click **Settings** (gear icon in code step or workflow settings)
-   - Add environment variable: `WORKFLOW_TOKEN`
-   - Value: Your existing GitHub workflow token
-   - The token needs `repo` scope to trigger workflows
+4. **Add GitHub Token as environment variable (CRITICAL STEP):**
+   
+   **Option A - In the code step itself (Recommended):**
+   - In your Pipedream workflow, click on the code step
+   - Look for **"+ Add connected account"** or **"Environment Variables"** section below the code editor
+   - Click **"Add environment variable"**
+   - Name: `WORKFLOW_TOKEN`
+   - Value: Paste your GitHub Personal Access Token
+   - Click **Save**
+   
+   **Option B - In workflow settings:**
+   - Click the gear icon (⚙️) at the top of your workflow
+   - Go to **Environment Variables** tab
+   - Click **Add variable**
+   - Name: `WORKFLOW_TOKEN`  
+   - Value: Your GitHub token
+   - Click **Save**
+   
+   **Create a new GitHub token if needed:**
+   - Go to: https://github.com/settings/tokens
+   - Click **Generate new token (classic)**
+   - Name: `Pipedream Webhook`
+   - Scopes: Check ✅ **`repo`** (full control)
+   - Click **Generate token**
+   - **Copy the token immediately** (starts with `ghp_` or `github_pat_`)
+   - Paste it into Pipedream's `WORKFLOW_TOKEN` variable
 
-5. **IMPORTANT - Don't use Pipedream's test button yet:**
+5. **After adding the token:**
    - The error `{"test":"event"}` means you're using Pipedream's dummy test data
    - **Skip the test button** and go straight to Step 4 (Deploy)
    - Real testing happens in Step 6 after deploying and configuring Formspark webhook
@@ -88,11 +125,30 @@ export default defineComponent({
 1. Go to Formspark dashboard at https://formspark.io
 2. Select your form (ID: `tDYrxcCDn`)
 3. Go to Settings → **Webhooks** or **Integrations**
-4. Add new webhook:
+   - ⚠️ **Important:** Webhooks might only be available on Formspark paid plans
+   - If you don't see a Webhooks option, see Alternative Solution below
+4. If webhooks are available:
    - **URL:** `https://eow6utunfmbmapo.m.pipedream.net`
    - **Method:** POST (should be default)
    - **Trigger:** On form submission
-5. Click **Save**
+   - Click **Save**
+
+**Test if Pipedream endpoint is working:**
+```bash
+# Run this in your terminal to test the endpoint directly
+curl -X POST https://eow6utunfmbmapo.m.pipedream.net \
+  -H "Content-Type: application/json" \
+  -d '{"email": "test@example.com"}'
+```
+
+After running this, check your Pipedream workflow - you should see an event appear.
+
+#### Alternative: If Formspark Free Plan Doesn't Have Webhooks
+
+Formspark's free plan may not include webhooks. In that case, use **Option 2 (Manual)** from [FORMSPARK_WEBHOOK_SETUP.md](FORMSPARK_WEBHOOK_SETUP.md):
+- Formspark emails you when someone subscribes
+- Go to GitHub Actions → "Add Subscriber (Manual)" workflow
+- Enter the email manually (takes 30 seconds)
 
 #### 6. Test the Complete Flow (With Real Data!)
 1. **Make sure workflow is deployed** (Step 4)
@@ -104,10 +160,11 @@ export default defineComponent({
    - Click **Subscribe**
    - You should see "✓ Successfully subscribed!" message
 
-3. **Check Pipedream Inspector (This shows REAL Formspark data):**
-   - Go to Pipedream dashboard → Your workflow → **Inspector** tab
-   - Should see the incoming webhook request from Formspark (not the test data)
-   - Click on it to see the full payload structure
+3. **Check Pipedream Events (This shows REAL Formspark data):**
+   - Go to Pipedream dashboard → Your workflow
+   - Look at the **event/execution list** (shows recent webhook requests)
+   - Click on the most recent event to see details
+   - Expand the trigger step to see the full payload Formspark sent
    - The logs should show: `"Processing subscription for: test@example.com"`
    - Verify email was extracted correctly from the actual Formspark payload
 
@@ -175,16 +232,16 @@ You'll need this for Pipedream to trigger GitHub Actions:
    - Go to About section
    - Enter your email
    - Click Subscribe
-   - **Check Pipedream logs:** Go to Pipedream dashboard → Your workflow → Inspector
-     - Should see incoming webhook from Formspark
-     - Should see outgoing request to GitHub API
+   - **Check Pipedream logs:** Go to Pipedream dashboard → Your workflow → View recent events
+     - Click on the event to see incoming webhook from Formspark
+     - Should see outgoing request to GitHub API in the logs
    - **Check GitHub Actions:** Go to your repo → Actions tab
      - Should see "Add Subscriber via Webhook" workflow running
    - **Check subscribers.json:** Should have your email added
 
 3. **Debugging:**
-   - **Pipedream logs show email missing?** → Check Formspark payload format in Pipedream Inspector
-   - **GitHub workflow not triggering?** → Verify GITHUB_TOKEN in Pipedream environment variables
+   - **Pipedream logs show email missing?** → Check Formspark payload format in the event details (expand the trigger step)
+   - **GitHub workflow not triggering?** → Verify WORKFLOW_TOKEN in Pipedream environment variables
    - **Workflow runs but fails?** → Check GitHub Actions logs for error details
 
 ---

@@ -231,26 +231,21 @@ function setupSubscriptionForm() {
         messageDiv.classList.add('hidden');
 
         try {
-            // Send to Formspark with JSON response
-            const formData = new FormData();
-            formData.append('email', email);
-            formData.append('_redirect', 'false'); // Disable redirect, return JSON
-
-            const response = await fetch('https://submit-form.com/tDYrxcCDn', {
+            // Send directly to Pipedream (which triggers GitHub Actions)
+            const response = await fetch('https://eow6utunfmbmapo.m.pipedream.net', {
                 method: 'POST',
-                body: formData,
                 headers: {
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json'
-                }
+                },
+                body: JSON.stringify({ email: email })
             });
 
             if (response.ok) {
                 showMessage('✓ Successfully subscribed! Thank you.', 'success');
                 emailInput.value = '';
             } else {
-                const result = await response.json().catch(() => ({}));
-                console.error('Formspark error:', result);
-                throw new Error(result.message || 'Subscription failed');
+                throw new Error('Subscription failed');
             }
         } catch (error) {
             console.error('Subscription error:', error);
