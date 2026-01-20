@@ -231,23 +231,26 @@ function setupSubscriptionForm() {
         messageDiv.classList.add('hidden');
 
         try {
-            // Use URLSearchParams for proper form encoding
-            const params = new URLSearchParams();
-            params.append('email', email);
+            // Send to Getform using FormData (standard form submission)
+            const formData = new FormData();
+            formData.append('email', email);
 
-            // no-cors mode works with localhost and GitHub Pages
-            await fetch('https://getform.io/f/diw8galuow5', {
+            const response = await fetch('https://getform.io/f/diw8galuow5', {
                 method: 'POST',
-                mode: 'no-cors',
+                body: formData,
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded'
-                },
-                body: params.toString()
+                    'Accept': 'application/json'
+                }
             });
 
-            // Response is opaque with no-cors; assume success if no throw
-            showMessage('✓ Successfully subscribed! Thank you.', 'success');
-            emailInput.value = '';
+            if (response.ok) {
+                showMessage('✓ Successfully subscribed! Thank you.', 'success');
+                emailInput.value = '';
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Getform error:', errorData);
+                throw new Error('Subscription failed');
+            }
         } catch (error) {
             console.error('Subscription error:', error);
             showMessage('✗ Something went wrong. Please try again later.', 'error');
