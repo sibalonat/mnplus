@@ -46,7 +46,18 @@ jobs:
           GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN || github.token }}
         run: |
           # Load current subscribers from secret (or start empty)
-          echo "${SUBSCRIBERS_JSON:-{\"subscribers\":[]}}" > subscribers.json
+          if [ -z "$SUBSCRIBERS_JSON" ]; then
+            echo '{"subscribers":[]}' > subscribers.json
+            echo "⚠️ SUBSCRIBERS_JSON secret not found, starting with empty list"
+          else
+            echo "$SUBSCRIBERS_JSON" > subscribers.json
+          fi
+          
+          # Validate JSON before proceeding
+          if ! python3 -c "import json; json.load(open('subscribers.json'))" 2>/dev/null; then
+            echo "❌ Invalid JSON in secret, resetting to empty"
+            echo '{"subscribers":[]}' > subscribers.json
+          fi
           
           # Update the JSON
           python3 << 'EOF'
@@ -86,8 +97,8 @@ jobs:
           print(f"\n📊 Total subscribers: {len(data['subscribers'])}")
           EOF
           
-          # Update GitHub secret with new data
-          UPDATED_JSON=$(cat subscribers.json | tr -d '\n')
+          # Update GitHub secret with new data (compact JSON for secret storage)
+          UPDATED_JSON=$(python3 -c "import json; print(json.dumps(json.load(open('subscribers.json'))))")
           gh secret set SUBSCRIBERS_JSON --body "$UPDATED_JSON"
 
       - name: Summary
