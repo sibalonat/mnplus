@@ -23,14 +23,16 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Load subscribers from secret
-        env:
-          SUBSCRIBERS_JSON: ${{ secrets.SUBSCRIBERS_JSON }}
+      - name: Check subscribers file
         run: |
-          echo "${SUBSCRIBERS_JSON:-{\"subscribers\":[]}}" > subscribers.json
-          SUBSCRIBER_COUNT=$(python3 -c "import json; data=json.load(open('subscribers.json')); print(len(data['subscribers']))")
-          echo "subscriber_count=$SUBSCRIBER_COUNT" >> $GITHUB_OUTPUT
-          echo "✅ Loaded $SUBSCRIBER_COUNT subscribers"
+          if [ -f "subscribers.json" ]; then
+            SUBSCRIBER_COUNT=$(python3 -c "import json; data=json.load(open('subscribers.json')); print(len(data['subscribers']))")
+            echo "subscriber_count=$SUBSCRIBER_COUNT" >> $GITHUB_OUTPUT
+            echo "✅ Found $SUBSCRIBER_COUNT subscribers in file"
+          else
+            echo "subscriber_count=0" >> $GITHUB_OUTPUT
+            echo "⚠️ No subscribers.json file found"
+          fi
         id: load_subscribers
 
       - name: Send notifications
