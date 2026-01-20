@@ -1,5 +1,6 @@
 name: Add Subscriber
 
+# Manual workflow to manage blog subscribers
 on:
   workflow_dispatch:
     inputs:
