@@ -58,6 +58,11 @@ Both `post.html` and markdown posts support embedded `<script>` tags. The `execu
 
 **Automated Build**: The `.github/workflows/build-posts.yml` workflow triggers on any changes to posts, metadata, or templates, automatically generating and committing the static pages.
 
+**Additional GitHub Actions Workflows**:
+- **notify-subscribers.yml** - Sends email notifications to subscribers when posts are added/updated
+- **add-subscribers.yml** - Manual workflow to add subscriber emails to `subscribers.json`
+- **list-subscribers.yml** - Manual workflow to view current subscriber list
+
 **Interactive Post Template**:
 ```markdown
 ## Your Interactive Section
@@ -88,7 +93,17 @@ Then open `http://localhost:8000`
 ### Deployment
 Hosted on GitHub Pages at `https://sibalonat.github.io/mnplus/`
 - Deploys automatically on push to `main` branch
-- Update `CNAME` if using custom domain
+- Custom domain configured via `CNAME` file in root directory
+- Base URL configuration in [build_posts.py](build_posts.py) (line 18) must match deployment URL
+
+### Email Subscription System
+Optional subscription feature using Formspree (collection) + Resend (sending):
+- **Frontend form**: Bauhaus-styled in About section ([index.html](index.html))
+- **Subscriber storage**: `subscribers.json` (manually maintained)
+- **Notification trigger**: [.github/workflows/notify-subscribers.yml](.github/workflows/notify-subscribers.yml) runs on `posts-metadata.json` changes
+- **Email script**: [scripts/notify_subscribers.py](scripts/notify_subscribers.py) detects new posts via git diff and sends HTML emails
+- **Setup**: Requires `RESEND_API_KEY` secret in GitHub repo settings (see [SUBSCRIPTION_SETUP.md](SUBSCRIPTION_SETUP.md))
+- **Free tier limits**: Resend allows 100 emails/day, 3,000/month
 
 ## Project-Specific Conventions
 
