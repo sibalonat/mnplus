@@ -231,22 +231,25 @@ function setupSubscriptionForm() {
         messageDiv.classList.add('hidden');
 
         try {
-            // Send to Formspark
+            // Send to Formspark with JSON response
             const formData = new FormData();
             formData.append('email', email);
+            formData.append('_redirect', 'false'); // Disable redirect, return JSON
 
             const response = await fetch('https://submit-form.com/tDYrxcCDn', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                headers: {
+                    'Accept': 'application/json'
+                }
             });
 
-            const result = await response.json();
-
-            if (response.ok && result.success !== false) {
+            if (response.ok) {
                 showMessage('✓ Successfully subscribed! Thank you.', 'success');
                 emailInput.value = '';
             } else {
-                console.error('Form service error:', result);
+                const result = await response.json().catch(() => ({}));
+                console.error('Formspark error:', result);
                 throw new Error(result.message || 'Subscription failed');
             }
         } catch (error) {
