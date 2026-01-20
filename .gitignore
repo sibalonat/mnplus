@@ -19,5 +19,9 @@ npm-debug.log*
 # node_modules/
 # package-lock.json
 
-# Subscriber data is stored in GitHub Secrets (not in repo)
+# Sensitive configuration files with API endpoints
+WEBHOOK_TRANSFORMER.md
+FORMSPARK_WEBHOOK_SETUP.md
+
+# Subscriber data managed by GitHub Actions
 subscribers.json

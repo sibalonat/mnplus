@@ -11,19 +11,17 @@ jobs:
   list-subscribers:
     runs-on: ubuntu-latest
     steps:
-      - name: Load and display subscribers
-        env:
-          SUBSCRIBERS_JSON: ${{ secrets.SUBSCRIBERS_JSON }}
+      - uses: actions/checkout@v3
+      
+      - name: Load and display subscribers from file
         run: |
-          # Load subscribers from secret
-          if [ -z "$SUBSCRIBERS_JSON" ]; then
-            echo "❌ SUBSCRIBERS_JSON secret not found"
-            echo "### ❌ No Subscribers Secret" >> $GITHUB_STEP_SUMMARY
-            echo "The SUBSCRIBERS_JSON secret hasn't been created yet. Add a subscriber first." >> $GITHUB_STEP_SUMMARY
+          # Check if subscribers.json exists
+          if [ ! -f "subscribers.json" ]; then
+            echo "❌ subscribers.json file not found"
+            echo "### ❌ No Subscribers Yet" >> $GITHUB_STEP_SUMMARY
+            echo "No one has subscribed yet. The file will be created when the first person subscribes." >> $GITHUB_STEP_SUMMARY
             exit 0
           fi
-          
-          echo "$SUBSCRIBERS_JSON" > subscribers.json
           
           # Display subscriber information
           python3 << 'EOF'

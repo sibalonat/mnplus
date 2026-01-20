@@ -1,12 +1,11 @@
 name: Add Subscriber (Manual)
 
-# Manual workflow - Check Formspark dashboard for new submissions
-# Then run this workflow to add them to the list
+# Manual workflow - Add/remove subscribers from subscribers.json file
 on:
   workflow_dispatch:
     inputs:
       email:
-        description: 'Email address to add (check Formspark dashboard for new submissions)'
+        description: 'Email address to add/remove'
         required: true
         type: string
       action:
@@ -26,38 +25,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
-          token: ${{ secrets.WORKFLOW_TOKEN || github.token }}
+          python-version: '3.x'
 
-      - name: Install GitHub CLI
-        run: |
-          type -p gh || (
-            type -p curl >/dev/null || (sudo apt update && sudo apt install curl -y)
-            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-            sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
-            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-            sudo apt update && sudo apt install gh -y
-          )
-
-      - name: Update subscribers secret
+      - name: Update subscribers file
         env:
           EMAIL: ${{ github.event.inputs.email }}
           ACTION: ${{ github.event.inputs.action }}
-          SUBSCRIBERS_JSON: ${{ secrets.SUBSCRIBERS_JSON }}
-          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN || github.token }}
         run: |
-          # Load current subscribers from secret (or start empty)
-          if [ -z "$SUBSCRIBERS_JSON" ]; then
+          # Load or create subscribers.json
+          if [ ! -f "subscribers.json" ]; then
             echo '{"subscribers":[]}' > subscribers.json
-            echo "⚠️ SUBSCRIBERS_JSON secret not found, starting with empty list"
-          else
-            echo "$SUBSCRIBERS_JSON" > subscribers.json
-          fi
-          
-          # Validate JSON before proceeding
-          if ! python3 -c "import json; json.load(open('subscribers.json'))" 2>/dev/null; then
-            echo "❌ Invalid JSON in secret, resetting to empty"
-            echo '{"subscribers":[]}' > subscribers.json
+            echo "⚠️ subscribers.json not found, creating new file"
           fi
           
           # Update the JSON
@@ -83,10 +65,7 @@ jobs:
                   print(f"⚠️ {email} already subscribed")
           elif action == 'remove':
               original_count = len(data['subscribers'])
-              data['subscribers'] = [
-                  sub for sub in data['subscribers'] 
-                  if sub['email'].lower() != email.lower()
-              ]
+              data['subscribers'] = [sub for sub in data['subscribers'] if sub['email'].lower() != email.lower()]
               if len(data['subscribers']) < original_count:
                   print(f"✅ Removed {email}")
               else:
@@ -97,22 +76,17 @@ jobs:
           
           print(f"\n📊 Total subscribers: {len(data['subscribers'])}")
           EOF
-          
-          # Update GitHub secret with new data (compact JSON for secret storage)
-          UPDATED_JSON=$(python3 -c "import json; print(json.dumps(json.load(open('subscribers.json'))))")
-          gh secret set SUBSCRIBERS_JSON --body "$UPDATED_JSON"
 
-      - name: Summary
+      - name: Commit and push changes
         run: |
-          echo "### ✅ Subscriber Update Complete" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          python3 << 'EOF' >> $GITHUB_STEP_SUMMARY
-          import json
-          with open('subscribers.json', 'r') as f:
-              data = json.load(f)
-          print(f"**Total Subscribers:** {len(data['subscribers'])}")
-          if data['subscribers']:
-              print("\n**Recent Subscribers:**")
-              for sub in data['subscribers'][-5:]:
-                  print(f"- {sub['email']} (joined {sub['subscribedAt']})")
-          EOF
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          if git diff --quiet subscribers.json 2>/dev/null; then
+            echo "No changes to commit"
+          else
+            git add subscribers.json
+            git commit -m "Update subscribers: ${{ github.event.inputs.action }} ${{ github.event.inputs.email }} [skip ci]"
+            git push
+            echo "✅ Changes committed"
+          fi
