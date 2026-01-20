@@ -17,6 +17,9 @@ on:
           - add
           - remove
 
+permissions:
+  contents: write
+
 jobs:
   update-subscribers:
     runs-on: ubuntu-latest
