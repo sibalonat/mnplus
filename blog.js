@@ -231,12 +231,11 @@ function setupSubscriptionForm() {
         messageDiv.classList.add('hidden');
 
         try {
-            // Send to Getform using standard form submission
+            // Send to Formspark
             const formData = new FormData();
             formData.append('email', email);
-            formData.append('_subject', 'New Blog Subscription');
 
-            const response = await fetch('https://getform.io/f/diw8galuow5', {
+            const response = await fetch('https://submit-form.com/tDYrxcCDn', {
                 method: 'POST',
                 body: formData
             });
@@ -247,7 +246,7 @@ function setupSubscriptionForm() {
                 showMessage('✓ Successfully subscribed! Thank you.', 'success');
                 emailInput.value = '';
             } else {
-                console.error('Getform error:', result);
+                console.error('Form service error:', result);
                 throw new Error(result.message || 'Subscription failed');
             }
         } catch (error) {
