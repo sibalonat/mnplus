@@ -241,7 +241,7 @@ function setupSubscriptionForm() {
             });
 
             const result = await response.json();
-            
+
             if (response.ok && result.success !== false) {
                 showMessage('✓ Successfully subscribed! Thank you.', 'success');
                 emailInput.value = '';
