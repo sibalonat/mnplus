@@ -28,43 +28,42 @@ jobs:
         with:
           token: ${{ secrets.WORKFLOW_TOKEN || github.token }}
 
-      - name: Create or update subscribers.json
+      - name: Update subscribers secret
         env:
           EMAIL: ${{ github.event.inputs.email }}
           ACTION: ${{ github.event.inputs.action }}
+          SUBSCRIBERS_JSON: ${{ secrets.SUBSCRIBERS_JSON }}
+          GH_TOKEN: ${{ secrets.WORKFLOW_TOKEN || github.token }}
         run: |
-          # Check if file exists, create if not
-          if [ ! -f subscribers.json ]; then
-            echo '{"subscribers":[]}' > subscribers.json
-          fi
+          # Load current subscribers from secret (or start empty)
+          echo "${SUBSCRIBERS_JSON:-{\"subscribers\":[]}}" > subscribers.json
           
-          # Update the JSON file
+          # Update the JSON
           python3 << 'EOF'
           import json
           import os
           from datetime import datetime
           
-          email = os.environ['EMAIL']
+          email = os.environ['EMAIL'].strip()
           action = os.environ['ACTION']
           
           with open('subscribers.json', 'r') as f:
               data = json.load(f)
           
           if action == 'add':
-              # Check if already exists
-              if not any(sub['email'] == email for sub in data['subscribers']):
+              if not any(sub['email'].lower() == email.lower() for sub in data['subscribers']):
                   data['subscribers'].append({
                       'email': email,
                       'subscribedAt': datetime.now().strftime('%Y-%m-%d')
                   })
                   print(f"✅ Added {email}")
               else:
-                  print(f"⚠️ {email} already exists")
+                  print(f"⚠️ {email} already subscribed")
           elif action == 'remove':
               original_count = len(data['subscribers'])
               data['subscribers'] = [
                   sub for sub in data['subscribers'] 
-                  if sub['email'] != email
+                  if sub['email'].lower() != email.lower()
               ]
               if len(data['subscribers']) < original_count:
                   print(f"✅ Removed {email}")
@@ -73,18 +72,25 @@ jobs:
           
           with open('subscribers.json', 'w') as f:
               json.dump(data, f, indent=2)
+          
+          print(f"\n📊 Total subscribers: {len(data['subscribers'])}")
           EOF
-
-      - name: Commit changes
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git add subscribers.json
-          git diff --quiet && git diff --staged --quiet || \
-            (git commit -m "📧 Update subscribers list" && git push)
+          
+          # Update GitHub secret with new data
+          UPDATED_JSON=$(cat subscribers.json | tr -d '\n')
+          gh secret set SUBSCRIBERS_JSON --body "$UPDATED_JSON"
 
       - name: Summary
         run: |
-          echo "✅ Subscriber list updated successfully"
-          echo "📊 Current subscribers:"
-          python3 -c "import json; data=json.load(open('subscribers.json')); print(f'{len(data[\"subscribers\"])} total')"
+          echo "### ✅ Subscriber Update Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          python3 << 'EOF' >> $GITHUB_STEP_SUMMARY
+          import json
+          with open('subscribers.json', 'r') as f:
+              data = json.load(f)
+          print(f"**Total Subscribers:** {len(data['subscribers'])}")
+          if data['subscribers']:
+              print("\n**Recent Subscribers:**")
+              for sub in data['subscribers'][-5:]:
+                  print(f"- {sub['email']} (joined {sub['subscribedAt']})")
+          EOF

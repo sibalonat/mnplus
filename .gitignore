@@ -18,3 +18,6 @@ npm-debug.log*
 # Optional: Uncomment if you're using Node.js for local development
 # node_modules/
 # package-lock.json
+
+# Subscriber data is stored in GitHub Secrets (not in repo)
+subscribers.json

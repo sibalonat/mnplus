@@ -23,23 +23,22 @@ jobs:
       - name: Install dependencies
         run: pip install requests
 
-      - name: Check if subscribers.json exists
-        id: check_file
+      - name: Load subscribers from secret
+        env:
+          SUBSCRIBERS_JSON: ${{ secrets.SUBSCRIBERS_JSON }}
         run: |
-          if [ -f subscribers.json ]; then
-            echo "exists=true" >> $GITHUB_OUTPUT
-            echo "✅ Found subscribers.json"
-          else
-            echo "exists=false" >> $GITHUB_OUTPUT
-            echo "⚠️ No subscribers.json file found"
-          fi
+          echo "${SUBSCRIBERS_JSON:-{\"subscribers\":[]}}" > subscribers.json
+          SUBSCRIBER_COUNT=$(python3 -c "import json; data=json.load(open('subscribers.json')); print(len(data['subscribers']))")
+          echo "subscriber_count=$SUBSCRIBER_COUNT" >> $GITHUB_OUTPUT
+          echo "✅ Loaded $SUBSCRIBER_COUNT subscribers"
+        id: load_subscribers
 
       - name: Send notifications
-        if: steps.check_file.outputs.exists == 'true'
+        if: steps.load_subscribers.outputs.subscriber_count != '0'
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
         run: python scripts/notify_subscribers.py
 
       - name: Skip notification
-        if: steps.check_file.outputs.exists == 'false'
-        run: echo "⚠️ Skipping notifications - no subscribers yet"
+        if: steps.load_subscribers.outputs.subscriber_count == '0'
+        run: echo "⚠️ No subscribers yet"
