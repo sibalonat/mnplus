@@ -198,72 +198,63 @@ function formatDate(dateString) {
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
         const href = this.getAttribute('href');
-
-        // Ignore empty or invalid hash links
-        if (!href || href === '#' || href.length <= 1) {
-            return;
-        }
-
+        if (!href || href === '#' || href.length <= 1) return; // ignore invalid anchors
         e.preventDefault();
         const target = document.querySelector(href);
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-        }
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
     });
 });
 
 // Subscription Form Setup
 function setupSubscriptionForm() {
     const form = document.getElementById('subscription-form');
+    if (!form) return;
+
     const emailInput = document.getElementById('subscriber-email');
     const messageDiv = document.getElementById('subscription-message');
     const submitButton = form.querySelector('.subscribe-button');
-    const buttonText = submitButton.querySelector('.button-text');
-    const buttonLoader = submitButton.querySelector('.button-loader');
+    const buttonText = submitButton?.querySelector('.button-text');
+    const buttonLoader = submitButton?.querySelector('.button-loader');
 
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const email = emailInput.value.trim();
-
         if (!isValidEmail(email)) {
             showMessage('Please enter a valid email address', 'error');
             return;
         }
 
-        // Disable form during submission
-        submitButton.disabled = true;
-        buttonText.classList.add('hidden');
-        buttonLoader.classList.remove('hidden');
+        if (submitButton) submitButton.disabled = true;
+        buttonText?.classList.add('hidden');
+        buttonLoader?.classList.remove('hidden');
         messageDiv.classList.add('hidden');
 
         try {
-            // Use Formspree (free tier) for form submission
-            const response = await fetch('https://formspree.io/f/xnjjzryq', {
+            // Use URLSearchParams for proper form encoding
+            const params = new URLSearchParams();
+            params.append('email', email);
+
+            // no-cors mode works with localhost and GitHub Pages
+            await fetch('https://getform.io/f/diw8galuow5', {
                 method: 'POST',
+                mode: 'no-cors',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/x-www-form-urlencoded'
                 },
-                body: JSON.stringify({
-                    email: email,
-                    _subject: 'New Blog Subscription',
-                }),
+                body: params.toString()
             });
 
-            if (response.ok) {
-                showMessage('✓ Successfully subscribed! Check your email for confirmation.', 'success');
-                emailInput.value = '';
-            } else {
-                throw new Error('Subscription failed');
-            }
+            // Response is opaque with no-cors; assume success if no throw
+            showMessage('✓ Successfully subscribed! Thank you.', 'success');
+            emailInput.value = '';
         } catch (error) {
             console.error('Subscription error:', error);
             showMessage('✗ Something went wrong. Please try again later.', 'error');
         } finally {
-            // Re-enable form
-            submitButton.disabled = false;
-            buttonText.classList.remove('hidden');
-            buttonLoader.classList.add('hidden');
+            if (submitButton) submitButton.disabled = false;
+            buttonText?.classList.remove('hidden');
+            buttonLoader?.classList.add('hidden');
         }
     });
 
