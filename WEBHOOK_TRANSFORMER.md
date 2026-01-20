@@ -1,11 +1,11 @@
-# Formspark → GitHub Actions (via Pipedream)
+# Blog Subscription System (via Pipedream)
 
 ## The Problem
-Formspark sends webhooks in its own format, but GitHub's `repository_dispatch` API expects a specific format. We need a tiny transformer in between.
+GitHub Pages is static and can't directly trigger GitHub Actions workflows from a form submission.
 
 ## Solution: Pipedream (Free, No Server Needed)
 
-**Pipedream** is a free workflow automation platform. We'll use it as a tiny webhook transformer (runs in ~100ms).
+**Pipedream** receives form submissions from your blog and triggers GitHub Actions to add subscribers automatically (runs in ~100ms).
 
 ### Setup Steps (2 minutes)
 
@@ -30,17 +30,12 @@ import axios from 'axios';
 
 export default defineComponent({
   async run({ steps, $ }) {
-    // Formspark can send data in different formats, let's handle all cases
+    // Get email from blog form submission
     const payload = steps.trigger.event.body || steps.trigger.event;
-    
-    // Try different ways Formspark might send the email
-    const email = payload.email || 
-                  payload.data?.email || 
-                  payload.fields?.email ||
-                  steps.trigger.event.email;
+    const email = payload.email;
     
     // Log the full payload for debugging
-    console.log("Full Formspark payload:", JSON.stringify(steps.trigger.event, null, 2));
+    console.log("Blog form payload:", JSON.stringify(steps.trigger.event, null, 2));
     
     if (!email) {
       throw new Error(`No email found in payload. Received: ${JSON.stringify(payload)}`);
@@ -121,19 +116,17 @@ export default defineComponent({
 1. Click **Deploy** in top right corner
 2. Workflow is now live and ready to receive webhooks!
 
-#### 5. Configure Formspark Webhook
-1. Go to Formspark dashboard at https://formspark.io
-2. Select your form (ID: `tDYrxcCDn`)
-3. Go to Settings → **Webhooks** or **Integrations**
-   - ⚠️ **Important:** Webhooks might only be available on Formspark paid plans
-   - If you don't see a Webhooks option, see Alternative Solution below
-4. If webhooks are available:
-   - **URL:** `https://eow6utunfmbmapo.m.pipedream.net`
-   - **Method:** POST (should be default)
-   - **Trigger:** On form submission
-   - Click **Save**
+#### 5. Update Blog Form (Already Done!)
+The form in `blog.js` now submits directly to Pipedream:
+```javascript
+fetch('https://eow6utunfmbmapo.m.pipedream.net', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email: email })
+})
+```
 
-**Test if Pipedream endpoint is working:**
+**Test the endpoint:**
 ```bash
 # Run this in your terminal to test the endpoint directly
 curl -X POST https://eow6utunfmbmapo.m.pipedream.net \
@@ -141,14 +134,7 @@ curl -X POST https://eow6utunfmbmapo.m.pipedream.net \
   -d '{"email": "test@example.com"}'
 ```
 
-After running this, check your Pipedream workflow - you should see an event appear.
-
-#### Alternative: If Formspark Free Plan Doesn't Have Webhooks
-
-Formspark's free plan may not include webhooks. In that case, use **Option 2 (Manual)** from [FORMSPARK_WEBHOOK_SETUP.md](FORMSPARK_WEBHOOK_SETUP.md):
-- Formspark emails you when someone subscribes
-- Go to GitHub Actions → "Add Subscriber (Manual)" workflow
-- Enter the email manually (takes 30 seconds)
+After running this, check your Pipedream workflow - you should see an event appear with the email.
 
 #### 6. Test the Complete Flow (With Real Data!)
 1. **Make sure workflow is deployed** (Step 4)
@@ -160,39 +146,38 @@ Formspark's free plan may not include webhooks. In that case, use **Option 2 (Ma
    - Click **Subscribe**
    - You should see "✓ Successfully subscribed!" message
 
-3. **Check Pipedream Events (This shows REAL Formspark data):**
+3. **Check Pipedream Events:**
    - Go to Pipedream dashboard → Your workflow
-   - Look at the **event/execution list** (shows recent webhook requests)
+   - Look at the **event/execution list** (shows recent requests)
    - Click on the most recent event to see details
-   - Expand the trigger step to see the full payload Formspark sent
    - The logs should show: `"Processing subscription for: test@example.com"`
-   - Verify email was extracted correctly from the actual Formspark payload
+   - Should see `✅ GitHub API response: 204` (success)
 
 4. **Check GitHub Actions:**
    - Go to your GitHub repo → **Actions** tab
    - Should see "Add Subscriber via Webhook" workflow running/completed
    - If successful, check `subscribers.json` for the new email
 
-5. **If email extraction still fails:**
-   - Look at the Pipedream logs showing the actual Formspark payload
-   - The code tries multiple locations: `payload.email`, `payload.data.email`, `payload.fields.email`
-   - If Formspark uses a different structure, we can adjust the code based on what you see
+5. **Verify subscriber was added:**
+   - Go to your repository on GitHub
+   - Check if `subscribers.json` exists (or was updated)
+   - Should contain the test email address
 
 ### Complete Flow
 ```
-User subscribes on blog 
+User fills subscription form on blog
   ↓
-Formspark receives form data
+blog.js sends email to Pipedream
   ↓
-Formspark sends webhook to Pipedream
+Pipedream extracts email and calls GitHub API (repository_dispatch)
   ↓
-Pipedream code extracts email and calls GitHub API
+GitHub Actions workflow "formspark-webhook.yml" triggered
   ↓
-GitHub Actions workflow "formspark-webhook.yml" runs
+Workflow adds email to subscribers.json
   ↓
-Email added to subscribers.json
+Changes committed and pushed automatically
   ↓
-Changes committed automatically
+Subscriber will receive emails when new posts are published
 ```
 
 ---
