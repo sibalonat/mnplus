@@ -231,25 +231,24 @@ function setupSubscriptionForm() {
         messageDiv.classList.add('hidden');
 
         try {
-            // Send to Getform using FormData (standard form submission)
+            // Send to Getform using standard form submission
             const formData = new FormData();
             formData.append('email', email);
+            formData.append('_subject', 'New Blog Subscription');
 
             const response = await fetch('https://getform.io/f/diw8galuow5', {
                 method: 'POST',
-                body: formData,
-                headers: {
-                    'Accept': 'application/json'
-                }
+                body: formData
             });
 
-            if (response.ok) {
+            const result = await response.json();
+            
+            if (response.ok && result.success !== false) {
                 showMessage('✓ Successfully subscribed! Thank you.', 'success');
                 emailInput.value = '';
             } else {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Getform error:', errorData);
-                throw new Error('Subscription failed');
+                console.error('Getform error:', result);
+                throw new Error(result.message || 'Subscription failed');
             }
         } catch (error) {
             console.error('Subscription error:', error);
