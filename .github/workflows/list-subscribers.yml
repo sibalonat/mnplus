@@ -1,0 +1,82 @@
+name: List Subscribers
+
+# Manual workflow to view current subscribers
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  list-subscribers:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load and display subscribers
+        env:
+          SUBSCRIBERS_JSON: ${{ secrets.SUBSCRIBERS_JSON }}
+        run: |
+          # Load subscribers from secret
+          if [ -z "$SUBSCRIBERS_JSON" ]; then
+            echo "❌ SUBSCRIBERS_JSON secret not found"
+            echo "### ❌ No Subscribers Secret" >> $GITHUB_STEP_SUMMARY
+            echo "The SUBSCRIBERS_JSON secret hasn't been created yet. Add a subscriber first." >> $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          
+          echo "$SUBSCRIBERS_JSON" > subscribers.json
+          
+          # Display subscriber information
+          python3 << 'EOF'
+          import json
+          import sys
+          
+          try:
+              with open('subscribers.json', 'r') as f:
+                  data = json.load(f)
+              
+              subscribers = data.get('subscribers', [])
+              count = len(subscribers)
+              
+              print(f"\n📊 Total Subscribers: {count}\n")
+              
+              if count == 0:
+                  print("No subscribers yet.")
+              else:
+                  print("Subscriber List:")
+                  print("-" * 50)
+                  for i, sub in enumerate(subscribers, 1):
+                      email = sub.get('email', 'Unknown')
+                      date = sub.get('subscribedAt', 'Unknown')
+                      # Mask part of email for security (show first 3 chars + domain)
+                      masked = email[:3] + '***@' + email.split('@')[1] if '@' in email else '***'
+                      print(f"{i}. {masked} (joined {date})")
+              
+              # Also output to GitHub summary (full emails since it's in workflow logs)
+              with open('summary.md', 'w') as f:
+                  f.write("### 📊 Subscriber List\n\n")
+                  f.write(f"**Total Subscribers:** {count}\n\n")
+                  
+                  if count > 0:
+                      f.write("| # | Email | Joined |\n")
+                      f.write("|---|-------|--------|\n")
+                      for i, sub in enumerate(subscribers, 1):
+                          email = sub.get('email', 'Unknown')
+                          date = sub.get('subscribedAt', 'Unknown')
+                          f.write(f"| {i} | {email} | {date} |\n")
+                  else:
+                      f.write("*No subscribers yet. Use the 'Add Subscriber' workflow to add one.*\n")
+              
+              # Append to GitHub step summary
+              with open('summary.md', 'r') as f:
+                  print(f.read(), file=open('/tmp/summary.txt', 'w'))
+              
+          except json.JSONDecodeError as e:
+              print(f"❌ Error: Invalid JSON in secret - {e}")
+              sys.exit(1)
+          except Exception as e:
+              print(f"❌ Error: {e}")
+              sys.exit(1)
+          EOF
+          
+          # Add to GitHub Actions summary
+          cat summary.md >> $GITHUB_STEP_SUMMARY
