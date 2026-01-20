@@ -3,6 +3,10 @@
     {
       "email": "sibalonat@gmail.com",
       "subscribedAt": "2026-01-20"
+    },
+    {
+      "email": "email@example.com",
+      "subscribedAt": "2026-01-20"
     }
   ]
 }
