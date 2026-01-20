@@ -1,0 +1,45 @@
+name: Notify Subscribers of New Posts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'posts/posts-metadata.json'
+      - 'posts/**/*.md'
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Check if subscribers.json exists
+        id: check_file
+        run: |
+          if [ -f subscribers.json ]; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "✅ Found subscribers.json"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "⚠️ No subscribers.json file found"
+          fi
+
+      - name: Send notifications
+        if: steps.check_file.outputs.exists == 'true'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+        run: python scripts/notify_subscribers.py
+
+      - name: Skip notification
+        if: steps.check_file.outputs.exists == 'false'
+        run: echo "⚠️ Skipping notifications - no subscribers yet"

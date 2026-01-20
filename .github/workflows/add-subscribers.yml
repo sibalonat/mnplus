@@ -1,0 +1,84 @@
+name: Add Subscriber
+
+on:
+  workflow_dispatch:
+    inputs:
+      email:
+        description: 'Email address to add'
+        required: true
+        type: string
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        default: 'add'
+        options:
+          - add
+          - remove
+
+jobs:
+  update-subscribers:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Create or update subscribers.json
+        env:
+          EMAIL: ${{ github.event.inputs.email }}
+          ACTION: ${{ github.event.inputs.action }}
+        run: |
+          # Check if file exists, create if not
+          if [ ! -f subscribers.json ]; then
+            echo '{"subscribers":[]}' > subscribers.json
+          fi
+          
+          # Update the JSON file
+          python3 << 'EOF'
+          import json
+          import os
+          from datetime import datetime
+          
+          email = os.environ['EMAIL']
+          action = os.environ['ACTION']
+          
+          with open('subscribers.json', 'r') as f:
+              data = json.load(f)
+          
+          if action == 'add':
+              # Check if already exists
+              if not any(sub['email'] == email for sub in data['subscribers']):
+                  data['subscribers'].append({
+                      'email': email,
+                      'subscribedAt': datetime.now().strftime('%Y-%m-%d')
+                  })
+                  print(f"✅ Added {email}")
+              else:
+                  print(f"⚠️ {email} already exists")
+          elif action == 'remove':
+              original_count = len(data['subscribers'])
+              data['subscribers'] = [
+                  sub for sub in data['subscribers'] 
+                  if sub['email'] != email
+              ]
+              if len(data['subscribers']) < original_count:
+                  print(f"✅ Removed {email}")
+              else:
+                  print(f"⚠️ {email} not found")
+          
+          with open('subscribers.json', 'w') as f:
+              json.dump(data, f, indent=2)
+          EOF
+
+      - name: Commit changes
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add subscribers.json
+          git diff --quiet && git diff --staged --quiet || \
+            (git commit -m "📧 Update subscribers list" && git push)
+
+      - name: Summary
+        run: |
+          echo "✅ Subscriber list updated successfully"
+          echo "📊 Current subscribers:"
+          python3 -c "import json; data=json.load(open('subscribers.json')); print(f'{len(data[\"subscribers\"])} total')"

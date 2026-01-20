@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadPosts();
     setupNavigation();
     setupBackButton();
+    setupSubscriptionForm();
     showSection('home');
 });
 
@@ -196,10 +197,84 @@ function formatDate(dateString) {
 // Add smooth scrolling for all links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+
+        // Ignore empty or invalid hash links
+        if (!href || href === '#' || href.length <= 1) {
+            return;
+        }
+
         e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
+        const target = document.querySelector(href);
         if (target) {
             target.scrollIntoView({ behavior: 'smooth' });
         }
     });
 });
+
+// Subscription Form Setup
+function setupSubscriptionForm() {
+    const form = document.getElementById('subscription-form');
+    const emailInput = document.getElementById('subscriber-email');
+    const messageDiv = document.getElementById('subscription-message');
+    const submitButton = form.querySelector('.subscribe-button');
+    const buttonText = submitButton.querySelector('.button-text');
+    const buttonLoader = submitButton.querySelector('.button-loader');
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const email = emailInput.value.trim();
+
+        if (!isValidEmail(email)) {
+            showMessage('Please enter a valid email address', 'error');
+            return;
+        }
+
+        // Disable form during submission
+        submitButton.disabled = true;
+        buttonText.classList.add('hidden');
+        buttonLoader.classList.remove('hidden');
+        messageDiv.classList.add('hidden');
+
+        try {
+            // Use Formspree (free tier) for form submission
+            const response = await fetch('https://formspree.io/f/xnjjzryq', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    email: email,
+                    _subject: 'New Blog Subscription',
+                }),
+            });
+
+            if (response.ok) {
+                showMessage('✓ Successfully subscribed! Check your email for confirmation.', 'success');
+                emailInput.value = '';
+            } else {
+                throw new Error('Subscription failed');
+            }
+        } catch (error) {
+            console.error('Subscription error:', error);
+            showMessage('✗ Something went wrong. Please try again later.', 'error');
+        } finally {
+            // Re-enable form
+            submitButton.disabled = false;
+            buttonText.classList.remove('hidden');
+            buttonLoader.classList.add('hidden');
+        }
+    });
+
+    function showMessage(message, type) {
+        messageDiv.textContent = message;
+        messageDiv.className = `subscription-message ${type}`;
+        messageDiv.classList.remove('hidden');
+    }
+
+    function isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+}

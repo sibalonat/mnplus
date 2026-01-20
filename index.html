@@ -99,6 +99,34 @@
         </p>
         <p>Explore the latest 3 posts and dive into structured thinking.</p>
       </div>
+
+      <!-- Subscription Section -->
+      <div class="subscription-section fade-in">
+        <div class="subscription-content">
+          <h3 class="subscription-title">Stay Updated</h3>
+          <p class="subscription-description">Get notified when new posts are published</p>
+          
+          <form id="subscription-form" class="subscription-form">
+            <div class="form-group">
+              <input 
+                type="email" 
+                id="subscriber-email" 
+                name="email" 
+                placeholder="your@email.com"
+                required
+                class="email-input"
+              />
+              <button type="submit" class="subscribe-button">
+                <span class="button-text">Subscribe</span>
+                <span class="button-loader hidden">●</span>
+              </button>
+            </div>
+            <div id="subscription-message" class="subscription-message hidden"></div>
+          </form>
+
+          <div class="subscription-shape"></div>
+        </div>
+      </div>
     </section>
 
     <!-- Footer -->
