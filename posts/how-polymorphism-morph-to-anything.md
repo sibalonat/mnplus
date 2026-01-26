@@ -21,15 +21,17 @@ The implementation uses **Pipedream** as a webhook transformer that bridges the 
 1. **Subscription form** → Sends POST request with email to Pipedream endpoint
 2. **Pipedream workflow** → Receives email, triggers GitHub API with `repository_dispatch` event
 3. **GitHub Actions** → Workflow listens for dispatch event, adds email to `subscribers.json`
-4. **Auto-commit** → Changes pushed back to repository
-5. **Notifications** → Separate workflow detects new posts, sends emails via Resend
+4. **Welcome email** → Automatically sent via Resend with Bauhaus-styled greeting
+5. **Auto-commit** → Changes pushed back to repository
+6. **New post notifications** → Separate workflow detects new posts, sends emails with excerpts via Resend
 
 Key components:
 - Pipedream webhook URL configured in `blog.js`
 - Node.js code step in Pipedream with axios to call GitHub API
 - GitHub Personal Access Token stored as `WORKFLOW_TOKEN` environment variable
 - GitHub Actions workflow triggered by `repository_dispatch` event (type: `formspark_submission`)
-- Python script compares git diffs to detect new posts and email subscribers
+- Python scripts: `send_welcome_email.py` for thanking new subscribers, `notify_subscribers.py` for new post alerts with excerpts
+- All emails styled with Bauhaus design (geometric shapes, primary colors, minimalist layout)
 
 ## What You Need to Change to Make It Work
 

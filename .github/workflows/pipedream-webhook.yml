@@ -67,6 +67,14 @@ jobs:
           print(f"📊 Total subscribers: {len(data['subscribers'])}")
           EOF
 
+      - name: Send welcome email
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL: ${{ github.event.client_payload.email }}
+        run: |
+          echo "📧 Sending welcome email..."
+          python3 scripts/send_welcome_email.py "$EMAIL" || echo "⚠️ Welcome email failed (non-blocking)"
+
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"
@@ -76,7 +84,7 @@ jobs:
             echo "No changes to commit"
           else
             git add subscribers.json
-            git commit -m "Add subscriber via Formspark webhook [skip ci]"
+            git commit -m "Add subscriber via Pipedream webhook [skip ci]"
             git push
             echo "✅ New subscriber committed to repository"
           fi
