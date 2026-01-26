@@ -14,7 +14,9 @@ from datetime import datetime
 # Configuration
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 BASE_URL = 'https://sibalonat.github.io/mnplus'
-FROM_EMAIL = 'marninikolli@gmail.com' 
+# NOTE: Resend requires a verified domain. Use 'onboarding@resend.dev' for testing
+# or your verified domain (e.g., 'blog@yourdomain.com')
+FROM_EMAIL = 'onboarding@resend.dev'
 SUBSCRIBERS_FILE = 'subscribers.json'
 METADATA_FILE = 'posts/posts-metadata.json'
 
@@ -27,21 +29,37 @@ def get_changed_posts():
             text=True
         )
         
+        print("Git diff output:")
+        print(diff_output)
+        print("=" * 60)
+        
         # Load current metadata
         with open(METADATA_FILE, 'r') as f:
             metadata = json.load(f)
         
-        # Get the latest post (assuming sorted by date, newest first)
-        if metadata.get('posts'):
-            latest_post = metadata['posts'][0]
-            
-            # Check if this post was added in the latest commit
-            if f'"{latest_post["filename"]}"' in diff_output and '+' in diff_output:
-                return [latest_post]
+        # Find all new posts in the diff
+        new_posts = []
         
+        if metadata.get('posts'):
+            for post in metadata['posts']:
+                filename = post['filename']
+                # Check if this post was added (look for the filename in added lines)
+                # More robust check: look for lines like '+            "filename": "...'
+                added_filename_pattern = f'+            "filename": "{filename}"'
+                
+                if added_filename_pattern in diff_output:
+                    print(f"✓ Detected new post: {post['title']}")
+                    new_posts.append(post)
+        
+        return new_posts
+    except subprocess.CalledProcessError as e:
+        print(f"Git command failed: {e}")
+        print(f"Return code: {e.returncode}")
         return []
     except Exception as e:
         print(f"Error detecting changes: {e}")
+        import traceback
+        traceback.print_exc()
         return []
 
 def load_subscribers():
@@ -166,34 +184,103 @@ def send_email_via_resend(to_email, post):
 
 def main():
     """Main function to detect new posts and notify subscribers."""
-    print("Checking for new posts...")
+    print("="*60)
+    print("Blog Post Email Notification System")
+    print("="*60)
+    print("Checking for new posts...\n")
+    
+    # Check if API key is set
+    if not RESEND_API_KEY:
+        print("❌ ERROR: RESEND_API_KEY environment variable not set!")
+        print("   Please configure the secret in GitHub repository settings.")
+        sys.exit(1)
     
     new_posts = get_changed_posts()
     
     if not new_posts:
-        print("No new posts detected.")
+        print("ℹ️  No new posts detected in this commit.")
+        print("   This is normal if the commit doesn't add new posts.")
         return
     
-    print(f"Found {len(new_posts)} new post(s)")
+    print(f"✅ Found {len(new_posts)} new post(s) to notify about!\n")
     
     subscribers = load_subscribers()
     
     if not subscribers:
-        print("No subscribers found.")
+        print("⚠️  No subscribers found in subscribers.json")
+        print("   Subscribers will be notified once they sign up.")
         return
     
-    print(f"Notifying {len(subscribers)} subscriber(s)...")
+    print(f"📧 Notifying {len(subscribers)} subscriber(s)...\n")
+    print("-"*60)
     
     for post in new_posts:
-        print(f"\nNotifying about: {post['title']}")
+        print(f"\n📝 Post: {post['title']}")
+        print(f"   Date: {post['date']}")
+        print(f"   Author: {post['author']}")
+        print()
+        
         success_count = 0
+        failed_count = 0
         
         for subscriber in subscribers:
             email = subscriber.get('email')
-            if email and send_email_via_resend(email, post):
-                success_count += 1
+            if email:
+                if send_email_via_resend(email, post):
+                    success_count += 1
+                else:
+                    failed_count += 1
         
-        print(f"\nSuccessfully notified {success_count}/{len(subscribers)} subscribers")
+        print()
+        print("-"*60)
+        print(f"📊 Results: {success_count} sent, {failed_count} failed out of {len(subscribers)} total")
+        
+        if failed_count > 0:
+            print("⚠️  Some emails failed. Check Resend dashboard and API key configuration.")
+            sys.exit(1)
 
 if __name__ == '__main__':
-    main()
+    # Check if we're in test mode (manual run with --test flag)
+    if len(sys.argv) > 1 and sys.argv[1] == '--test':
+        print("🧪 TEST MODE: Sending notification for the latest post\n")
+        print("="*60)
+        
+        if not RESEND_API_KEY:
+            print("❌ ERROR: RESEND_API_KEY environment variable not set!")
+            print("   Set it with: export RESEND_API_KEY='your-api-key'")
+            sys.exit(1)
+        
+        # Load metadata and get the latest post
+        try:
+            with open(METADATA_FILE, 'r') as f:
+                metadata = json.load(f)
+            
+            if not metadata.get('posts'):
+                print("❌ No posts found in metadata")
+                sys.exit(1)
+            
+            latest_post = metadata['posts'][0]
+            print(f"📝 Latest post: {latest_post['title']}")
+            print(f"   Date: {latest_post['date']}")
+            print(f"   Author: {latest_post['author']}\n")
+            
+            subscribers = load_subscribers()
+            if not subscribers:
+                print("⚠️  No subscribers found")
+                sys.exit(0)
+            
+            print(f"📧 Sending test email to {len(subscribers)} subscriber(s)...\n")
+            
+            for subscriber in subscribers:
+                email = subscriber.get('email')
+                if email:
+                    send_email_via_resend(email, latest_post)
+            
+            print("\n✅ Test complete!")
+        except Exception as e:
+            print(f"❌ Test failed: {e}")
+            import traceback
+            traceback.print_exc()
+            sys.exit(1)
+    else:
+        main()
