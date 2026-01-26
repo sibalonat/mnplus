@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "How Polymorphism Morph to Anything",
+            "filename": "how-polymorphism-morph-to-anything.md",
+            "date": "2026-01-21",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "A personal journey of becoming a father and implementing a newsletter system for a static blog - exploring the intersection of life changes, AI, and software development polymorphism.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "How pressure metrics works",
             "filename": "how-pressure-metrics-works.md",
             "date": "2026-01-17",

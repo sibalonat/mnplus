@@ -106,6 +106,20 @@ This creates static HTML files at `posts/YYYY/MM/post-slug.html` with proper met
 
 You only need to commit your `.md` file and `posts-metadata.json` changes!
 
+### 5. Testing Locally
+
+**Important**: You MUST run a local web server (not `file://` protocol) due to CORS restrictions:
+
+```bash
+# Build posts first (generates static HTML with SEO tags)
+python3 build_posts.py
+
+# Start local server
+python -m http.server 8000
+```
+
+Then open `http://localhost:8000` in your browser.
+
 ## Project Structure
 
 ```

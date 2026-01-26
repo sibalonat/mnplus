@@ -97,13 +97,14 @@ Hosted on GitHub Pages at `https://sibalonat.github.io/mnplus/`
 - Base URL configuration in [build_posts.py](build_posts.py) (line 18) must match deployment URL
 
 ### Email Subscription System
-Optional subscription feature using Formspree (collection) + Resend (sending):
+Optional subscription feature using Pipedream (webhooks) + Resend (sending):
 - **Frontend form**: Bauhaus-styled in About section ([index.html](index.html))
-- **Subscriber storage**: `subscribers.json` (manually maintained)
+- **Webhook handler**: Pipedream receives form submissions and triggers GitHub Actions
+- **Subscriber storage**: `subscribers.json` (automatically maintained via GitHub Actions)
 - **Notification trigger**: [.github/workflows/notify-subscribers.yml](.github/workflows/notify-subscribers.yml) runs on `posts-metadata.json` changes
 - **Email script**: [scripts/notify_subscribers.py](scripts/notify_subscribers.py) detects new posts via git diff and sends HTML emails
-- **Setup**: Requires `RESEND_API_KEY` secret in GitHub repo settings (see [SUBSCRIPTION_SETUP.md](SUBSCRIPTION_SETUP.md))
-- **Free tier limits**: Resend allows 100 emails/day, 3,000/month
+- **Setup**: Requires `RESEND_API_KEY` and `WORKFLOW_TOKEN` secrets in GitHub repo settings (see [WEBHOOK_TRANSFORMER.md](WEBHOOK_TRANSFORMER.md))
+- **Free tier limits**: Resend allows 100 emails/day, 3,000/month; Pipedream free tier is generous
 
 ## Project-Specific Conventions
 

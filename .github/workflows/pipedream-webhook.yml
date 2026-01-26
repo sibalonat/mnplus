@@ -1,6 +1,6 @@
 name: Add Subscriber via Webhook
 
-# Triggered by Formspark webhook when someone subscribes
+# Triggered by Pipedream webhook when someone subscribes
 on:
   repository_dispatch:
     types: [formspark_submission]

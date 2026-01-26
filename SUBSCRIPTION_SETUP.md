@@ -5,22 +5,23 @@
 This blog now includes an email subscription system that automatically notifies subscribers when new posts are published. The system uses:
 
 - **Frontend**: Bauhaus-styled subscription form (no external dependencies)
-- **Email Collection**: Formspree (free tier)
+- **Webhook Handler**: Pipedream (free tier)
 - **Email Sending**: Resend (free tier: 100 emails/day, 3,000/month)
 - **Automation**: GitHub Actions
 
 ## Setup Instructions
 
-### 1. Set Up Formspree (Email Collection)
+### 1. Set Up Pipedream (Webhook Handler)
 
-1. Go to [formspree.io](https://formspree.io) and create a free account
-2. Create a new form
-3. Copy your form ID (looks like: `xzbqwxyz`)
-4. Update `blog.js` line 249 with your form ID:
+1. Go to [pipedream.com](https://pipedream.com) and create a free account
+2. Create a new workflow with HTTP/Webhook trigger
+3. Add a Node.js code step that triggers GitHub API (see [WEBHOOK_TRANSFORMER.md](WEBHOOK_TRANSFORMER.md) for complete code)
+4. Copy your Pipedream webhook URL (looks like: `https://eow6utunfmbmapo.m.pipedream.net`)
+5. Update `blog.js` line 235 with your webhook URL:
    ```javascript
-   const response = await fetch('https://formspree.io/f/YOUR_FORM_ID', {
+   const response = await fetch('https://YOUR_PIPEDREAM_URL.m.pipedream.net', {
    ```
-   Replace `YOUR_FORM_ID` with your actual Formspree form ID
+   Replace with your actual Pipedream webhook URL
 
 ### 2. Set Up Resend (Email Sending)
 
@@ -43,23 +44,14 @@ This blog now includes an email subscription system that automatically notifies 
 
 ### 4. Manage Subscribers
 
-When someone subscribes via Formspree:
+When someone subscribes:
 
-1. You'll receive an email notification from Formspree
-2. Manually add their email to `subscribers.json`:
-   ```json
-   {
-     "subscribers": [
-       {
-         "email": "user@example.com",
-         "subscribedAt": "2026-01-20"
-       }
-     ]
-   }
-   ```
-3. Commit and push the updated `subscribers.json`
+1. The form sends their email to your Pipedream webhook
+2. Pipedream triggers GitHub Actions via `repository_dispatch` event
+3. GitHub Actions workflow automatically adds the email to `subscribers.json`
+4. Changes are committed and pushed automatically
 
-**Future Enhancement**: You can automate this by using Formspree's webhook feature to automatically add subscribers to the JSON file via GitHub API.
+**Fully automated** - no manual intervention needed!
 
 ### 5. Testing the System
 
@@ -79,9 +71,10 @@ Then navigate to About section to see the subscription form.
 
 ### Subscription Flow
 1. User fills out form on About page
-2. Form submits to Formspree
-3. You receive notification and manually add email to `subscribers.json`
-4. Subscriber is now in the system
+2. Form submits to Pipedream webhook
+3. Pipedream triggers GitHub Actions via `repository_dispatch`
+4. GitHub Actions automatically adds email to `subscribers.json`
+5. Subscriber is now in the system (fully automated)
 
 ### Notification Flow
 1. You add/update a post and commit to `main` branch
