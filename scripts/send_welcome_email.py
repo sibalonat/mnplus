@@ -12,7 +12,7 @@ import requests
 # Configuration
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 BASE_URL = 'https://sibalonat.github.io/mnplus'
-FROM_EMAIL = 'marninikolli@gmail.com'
+FROM_EMAIL = 'onboarding@resend.dev'  # Resend's test domain - works immediately
 
 def send_welcome_email(to_email):
     """Send welcome email to new subscriber using Resend API."""
