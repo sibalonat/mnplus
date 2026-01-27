@@ -67,6 +67,11 @@ jobs:
           print(f"📊 Total subscribers: {len(data['subscribers'])}")
           EOF
 
+      - name: Install Python dependencies
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install requests
+
       - name: Send welcome email
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
