@@ -29,7 +29,7 @@ Key components:
 - Pipedream webhook URL configured in `blog.js`
 - Node.js code step in Pipedream with axios to call GitHub API
 - GitHub Personal Access Token stored as `WORKFLOW_TOKEN` environment variable
-- GitHub Actions workflow triggered by `repository_dispatch` event (type: `formspark_submission`)
+- GitHub Actions workflow triggered by `repository_dispatch` event (type: `pipedream_subscription`)
 - Python scripts: `send_welcome_email.py` for thanking new subscribers, `notify_subscribers.py` for new post alerts with excerpts
 - All emails styled with Bauhaus design (geometric shapes, primary colors, minimalist layout)
 

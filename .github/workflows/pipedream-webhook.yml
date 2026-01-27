@@ -3,7 +3,7 @@ name: Add Subscriber via Webhook
 # Triggered by Pipedream webhook when someone subscribes
 on:
   repository_dispatch:
-    types: [formspark_submission]
+    types: [pipedream_subscription]
 
 permissions:
   contents: write
