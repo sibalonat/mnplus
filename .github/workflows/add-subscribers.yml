@@ -77,6 +77,15 @@ jobs:
           print(f"\n📊 Total subscribers: {len(data['subscribers'])}")
           EOF
 
+      - name: Send welcome email (for new subscribers)
+        if: github.event.inputs.action == 'add'
+        env:
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL: ${{ github.event.inputs.email }}
+        run: |
+          echo "📧 Sending welcome email..."
+          python3 scripts/send_welcome_email.py "$EMAIL" || echo "⚠️ Welcome email failed (non-blocking)"
+
       - name: Commit and push changes
         run: |
           git config user.name "github-actions[bot]"

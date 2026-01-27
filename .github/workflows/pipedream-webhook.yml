@@ -72,8 +72,14 @@ jobs:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           EMAIL: ${{ github.event.client_payload.email }}
         run: |
-          echo "📧 Sending welcome email..."
-          python3 scripts/send_welcome_email.py "$EMAIL" || echo "⚠️ Welcome email failed (non-blocking)"
+          echo "📧 Sending welcome email to $EMAIL..."
+          if python3 scripts/send_welcome_email.py "$EMAIL"; then
+            echo "✅ Welcome email sent successfully"
+          else
+            echo "❌ Warning: Welcome email failed to send"
+            echo "Email was added to subscribers but welcome email delivery failed"
+            echo "Check RESEND_API_KEY secret and Resend account status"
+          fi
 
       - name: Commit and push changes
         run: |

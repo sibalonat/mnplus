@@ -17,8 +17,13 @@ FROM_EMAIL = 'marninikolli@gmail.com'
 def send_welcome_email(to_email):
     """Send welcome email to new subscriber using Resend API."""
     if not RESEND_API_KEY:
-        print("Error: RESEND_API_KEY not set in environment")
+        print("❌ Error: RESEND_API_KEY not set in environment")
+        print("   Make sure the RESEND_API_KEY secret is configured in GitHub repository settings")
         return False
+    
+    print(f"📧 Preparing welcome email for: {to_email}")
+    print(f"   From: arra.blog <{FROM_EMAIL}>")
+    print(f"   Using Resend API endpoint: https://api.resend.com/emails")
     
     # Email content with Bauhaus styling
     html_content = f"""
@@ -163,15 +168,21 @@ You're receiving this because you subscribed to [arra.blog]
         )
         
         if response.status_code == 200:
-            print(f"✅ Welcome email sent to {to_email}")
+            print(f"✅ Welcome email sent successfully to {to_email}")
+            print(f"   Response: {response.json()}")
             return True
         else:
-            print(f"❌ Failed to send email: {response.status_code}")
-            print(f"Response: {response.text}")
+            print(f"❌ Failed to send email: HTTP {response.status_code}")
+            print(f"   Response body: {response.text}")
+            print(f"   Check your Resend API key and account status at https://resend.com/")
             return False
             
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Network error while sending email: {e}")
+        print(f"   Check your internet connection and Resend API status")
+        return False
     except Exception as e:
-        print(f"❌ Error sending email: {e}")
+        print(f"❌ Unexpected error sending email: {type(e).__name__}: {e}")
         return False
 
 if __name__ == '__main__':

@@ -1,6 +1,22 @@
 # Email Notification System - Troubleshooting Guide
 
+## Overview
+
+The blog has two types of email notifications:
+1. **Welcome emails** - Sent immediately when a new subscriber joins
+2. **Post notification emails** - Sent when a new blog post is published
+
 ## Issues Found and Fixed
+
+### Welcome Email Issues ✅
+
+#### Problem 1: Manual workflow missing welcome email step
+**Fixed**: The `add-subscribers.yml` workflow now includes a welcome email step that triggers when adding new subscribers manually.
+
+#### Problem 2: Webhook workflow had weak error reporting  
+**Fixed**: Improved error messages in both workflows and the `send_welcome_email.py` script to provide clearer diagnostics when emails fail.
+
+### Post Notification Issues
 
 ### 1. **Invalid Sender Email Address** ❌
 **Problem**: The script was using `marninikolli@gmail.com` as the sender email.
@@ -20,6 +36,35 @@
 **Solution**: Added comprehensive logging with emojis for better visibility and clearer error messages.
 
 ## How to Test Locally
+
+### Testing Welcome Emails
+
+#### Option 1: Direct script execution
+```bash
+# Set your Resend API key
+export RESEND_API_KEY='re_your_api_key_here'
+
+# Send a welcome email to a test address
+python3 scripts/send_welcome_email.py test@example.com
+```
+
+Expected output if successful:
+```
+📧 Preparing welcome email for: test@example.com
+   From: arra.blog <marninikolli@gmail.com>
+   Using Resend API endpoint: https://api.resend.com/emails
+✅ Welcome email sent successfully to test@example.com
+   Response: {'id': 'abc123...'}
+```
+
+#### Option 2: Test via GitHub Actions (Manual)
+1. Go to GitHub Actions tab
+2. Select "Add Subscriber (Manual)" workflow
+3. Click "Run workflow"
+4. Enter email and select "add" action
+5. Check workflow logs to see if welcome email was sent
+
+### Testing Post Notification Emails
 
 ### Option 1: Test Mode (Recommended)
 Send a test email for the latest post without requiring a git commit:
@@ -95,6 +140,37 @@ The workflow runs automatically when:
 4. Click on recent runs to see logs
 
 ## Common Issues and Solutions
+
+### Welcome Email Issues
+
+#### Issue: Welcome email not sent when manually adding subscriber
+**Cause**: Missing welcome email step in workflow (now fixed)
+
+**Solution**: 
+- Pull latest changes: `git pull origin main`
+- The workflow now includes a welcome email step
+- Re-run the "Add Subscriber (Manual)" workflow if you need to send delayed welcome emails
+
+#### Issue: Welcome email fails with "RESEND_API_KEY not set"
+**Cause**: Secret not configured in GitHub repository
+
+**Solution**:
+1. Go to GitHub repo → Settings → Secrets and variables → Actions
+2. Click "New repository secret"
+3. Name: `RESEND_API_KEY`
+4. Value: Your Resend API key from https://resend.com/api-keys
+5. Click "Add secret"
+
+#### Issue: Welcome email sent but subscriber never receives it
+**Cause**: Email might be in spam or sender domain not verified
+
+**Solutions**:
+- Check spam/junk folder
+- If using custom domain, verify DNS records are set up correctly in Resend dashboard
+- Test with Resend's test domain (`onboarding@resend.dev`) which only works for your Resend account owner's email
+- Check Resend dashboard logs at https://resend.com/emails for delivery status
+
+### Post Notification Issues
 
 ### Issue: "No new posts detected"
 **Cause**: The git diff doesn't show any new posts in `posts-metadata.json`
