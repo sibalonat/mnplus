@@ -46,14 +46,34 @@ If you want to replicate this setup for your own GitHub Pages blog, here are the
 
 ### 2. GitHub Secrets Configuration
 You'll need to add these secrets in **Settings → Secrets and variables → Actions**:
-- `RESEND_API_KEY` - Your Resend API key for sending emails
+- `RESEND_API_KEY` - Your Resend API key for sending emails (get from Resend dashboard after domain verification)
 - `WORKFLOW_TOKEN` - GitHub Personal Access Token with `workflow` scope (for Pipedream to trigger actions)
 
-### 3. Email Provider Setup (Resend)
+### 3. Domain and Email Infrastructure Setup
+
+For my implementation, I needed to configure proper email sending capabilities for the blog. Here's the complete setup I used:
+
+**Domain Management:**
+- Moved nameservers from my cloud hosting provider to **Cloudflare** for better DNS management
+- Configured all domain records (A, CNAME, TXT) through Cloudflare's dashboard
+
+**Email Forwarding with ImprovMX:**
+- Set up **ImprovMX** (free tier) to forward emails from `new@arra.blog` to my personal email
+- Added MX records in Cloudflare pointing to ImprovMX servers
+- This allows me to receive replies without managing a full email server
+
+**Transactional Email with Resend:**
 - Sign up for a free Resend account (100 emails/day, 3,000/month)
-- Verify your domain or use their onboarding domain for testing
-- Create an API key from the dashboard
-- Update `scripts/notify_subscribers.py` with your verified sender email address
+- Added Resend's DNS records (SPF, DKIM, DMARC) in Cloudflare for domain verification
+- Verified `arra.blog` domain in Resend dashboard
+- Created an API key from Resend dashboard
+- Updated `scripts/send_welcome_email.py` and `scripts/notify_subscribers.py` with verified sender email
+
+**Why this setup works:**
+- **Cloudflare** centralizes all DNS management (no need to switch between providers)
+- **ImprovMX** handles incoming email forwarding (replies from subscribers)
+- **Resend** handles outgoing transactional emails (welcome emails, post notifications)
+- All SMTP/DNS records managed in one place through Cloudflare
 
 ### 4. Repository-Specific Values
 In your forked/cloned repository, update:
