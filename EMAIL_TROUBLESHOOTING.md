@@ -161,6 +161,14 @@ The workflow runs automatically when:
 4. Value: Your Resend API key from https://resend.com/api-keys
 5. Click "Add secret"
 
+#### Issue: "ModuleNotFoundError: No module named 'requests'"
+**Cause**: Python requests library not installed (now fixed in workflows)
+
+**Solution**:
+- Pull latest changes: `git pull origin main`
+- The workflows now automatically install the `requests` package before sending emails
+- For local testing, install manually: `pip install requests`
+
 #### Issue: Welcome email sent but subscriber never receives it
 **Cause**: Email might be in spam or sender domain not verified
 
