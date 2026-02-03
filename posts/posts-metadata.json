@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Nonsensical Jargon for Something to Pass",
+            "filename": "nonsensical-jargon-for-something-to-pass.md",
+            "date": "2026-02-03",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "From Sokal's postmodern hoax to AI-generated code - exploring how jargon can mask meaninglessness, and why human oversight remains crucial in software development.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "How Polymorphism Morph to Anything",
             "filename": "how-polymorphism-morph-to-anything.md",
             "date": "2026-01-21",
