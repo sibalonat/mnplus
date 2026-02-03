@@ -16,7 +16,7 @@ RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
 BASE_URL = 'https://sibalonat.github.io/mnplus'
 # NOTE: Resend requires a verified domain. Use 'onboarding@resend.dev' for testing
 # or your verified domain (e.g., 'blog@yourdomain.com')
-FROM_EMAIL = 'onboarding@resend.dev'
+FROM_EMAIL = 'new@arra.blog'
 SUBSCRIBERS_FILE = 'subscribers.json'
 METADATA_FILE = 'posts/posts-metadata.json'
 
