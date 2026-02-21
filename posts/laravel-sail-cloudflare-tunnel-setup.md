@@ -954,19 +954,6 @@ sysctls:
   - net.core.wmem_max=7340032
 ```
 
-### Meilisearch version mismatch
-
-If Meilisearch exits with "database version incompatible":
-
-```bash
-docker compose stop meilisearch
-docker compose rm -f meilisearch
-docker volume rm your-project_sail-meilisearch
-docker compose up -d meilisearch
-```
-
-This deletes the search index data. Indexes are rebuilt when you re-import (`php artisan scout:import`).
-
 ---
 
 ## Moving Toward Production
