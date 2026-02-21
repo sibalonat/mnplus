@@ -100,6 +100,7 @@ python3 build_posts.py
 This creates static HTML files at `posts/YYYY/MM/post-slug.html` with proper meta tags for social media sharing.
 
 **The GitHub Action will automatically:**
+
 - Run when you push new posts or update metadata
 - Generate the static HTML files
 - Commit and push them back to your repository

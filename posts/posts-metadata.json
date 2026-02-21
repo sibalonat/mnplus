@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Laravel Sail + Cloudflare Tunnel: A Production-Grade Development Setup",
+            "filename": "laravel-sail-cloudflare-tunnel-setup.md",
+            "date": "2026-02-21",
+            "author": "Marin Nikolli",
+            "category": "technical",
+            "excerpt": "A complete guide to running Laravel 12 with Sail behind a Cloudflare Quick Tunnel — with Vite HMR, queue workers, scheduler, and Laravel Reverb WebSockets all working through a single public URL.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "Nonsensical Jargon for Something to Pass",
             "filename": "nonsensical-jargon-for-something-to-pass.md",
             "date": "2026-02-03",
