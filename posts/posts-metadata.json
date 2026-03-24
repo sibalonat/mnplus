@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Do Machines Understand Machines",
+            "filename": "do-machines-understand-machines.md",
+            "date": "2026-03-22",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "From Google Stitch to Claude's honest critique — exploring what happens when AI designs for developers, and why the human filter still matters.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "When Designers Become QA: The Hidden Cost of AI-Driven Workflows",
             "filename": "when-designers-become-qa.md",
             "date": "2026-03-08",
