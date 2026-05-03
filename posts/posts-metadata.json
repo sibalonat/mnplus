@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Software Developers Can Sell You the Next Big Thing",
+            "filename": "software-developers-can-sell-you-the-next-big-thing.md",
+            "date": "2026-05-06",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "On the surprise of technical founders who can sell, the shift from building to overseeing, and whether a developer can pitch not the structure of the code but something they imagine happening.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "AI Should Do My Laundry",
             "filename": "ai-should-do-my-laundry.md",
             "date": "2026-04-21",
