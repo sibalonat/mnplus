@@ -1,6 +1,24 @@
 {
     "posts": [
         {
+            "title": "Remember Long Enough, Forget Fast Enough",
+            "filename": "remember-long-enough-forget-fast-enough.md",
+            "date": "2026-06-17",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "On a compliance job where LLMs multiplied the work, the night Fable 5 arrived and then vanished for foreign nationals, and a Deutsche Welle documentary about remembering long enough and forgetting fast enough — why the model is the better memory and we're the better forgetting.",
+            "image": "assets/default-share-image.png"
+        },
+        {
+            "title": "Our Limitations Give More Than They Take",
+            "filename": "our-limitations-give-more-than-they-take.md",
+            "date": "2026-06-03",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "A line from Al Hirschfeld about limitations being the only value in art, read at 23, set against today's push to give AI complete freeway — on supply-chain attacks, a pre-commit hook you install yourself, and why knowing your limits is what keeps a developer relevant.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "When the LLM Thinks Too Fast",
             "filename": "when-the-llm-thinks-too-fast.md",
             "date": "2026-05-20",
