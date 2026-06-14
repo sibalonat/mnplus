@@ -26,7 +26,7 @@ That's the trap with "AI" as we use it now: it lives inside limited resources, a
 
 ## The Loop Still Needs a Human
 
-One thing has stayed consistent across the project I'm building with my brother. It's close to being demoed now, and the feedback has been very good. What I can say is this: the LLM genuinely helps with development, but you cannot assume it makes sense to let it run a loop on its own. Human oversight still matters — not because the machine needs us to babysit it, but because it's humans who decide on compliance, and humans who write the laws. The model can hold a great deal in context and recall it on command. It cannot decide what is *allowed*.
+The longer I work this way, the more one thing holds true: the LLM genuinely helps with development, but you cannot assume it makes sense to let it run a loop on its own. Human oversight still matters — not because the machine needs us to babysit it, but because it's humans who decide on compliance, and humans who write the laws. The model can hold a great deal in context and recall it on command. It cannot decide what is *allowed*.
 
 That's the part I keep coming back to. The model is the better memory. We're the better forgetting — the ones who know what to let go of, what's still our responsibility, and what was never the machine's to keep.
 
