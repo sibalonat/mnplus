@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Start Over, or Cut It Out",
+            "filename": "start-over-or-cut-it-out.md",
+            "date": "2026-07-01",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "On six months of writing and the roughly two thousand readers who found posts I made almost impossible to find, the ambiguity of an AI moment that feels hopeful and doomed at once, and the fork I keep returning to with my brother's product — make surgical cuts you can't fully trace, or start over and inherit a fresh pile of technical debt — and why, either way, the human stays accountable for what to keep and what to cut.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "Remember Long Enough, Forget Fast Enough",
             "filename": "remember-long-enough-forget-fast-enough.md",
             "date": "2026-06-17",
