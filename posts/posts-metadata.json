@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Nobody Can Tell You Why",
+            "filename": "nobody-can-tell-you-why.md",
+            "date": "2026-07-15",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "From solving programming challenges since 2022, where a human reviewer explained every line, to Reid Blackman's loan office where nobody can explain the rejection at all — on the road toward ISO/IEC 42001, the gap between accuracy and explanation in today's ML, and why, in an economy that runs companies like big bets, the why still lands on a human's desk.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "Start Over, or Cut It Out",
             "filename": "start-over-or-cut-it-out.md",
             "date": "2026-07-01",
