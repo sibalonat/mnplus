@@ -9,7 +9,13 @@ import os
 import subprocess
 import sys
 import requests
-from datetime import datetime
+from datetime import datetime, timezone
+
+try:
+    from zoneinfo import ZoneInfo
+    BLOG_TZ = ZoneInfo('Europe/Tirane')
+except Exception:
+    BLOG_TZ = timezone.utc
 
 # Configuration
 RESEND_API_KEY = os.environ.get('RESEND_API_KEY')
@@ -19,6 +25,10 @@ BASE_URL = 'https://sibalonat.github.io/mnplus'
 FROM_EMAIL = 'new@arra.blog'
 SUBSCRIBERS_FILE = 'subscribers.json'
 METADATA_FILE = 'posts/posts-metadata.json'
+
+def blog_today():
+    """Current date (YYYY-MM-DD) where the blog lives — publication dates are local."""
+    return datetime.now(BLOG_TZ).strftime('%Y-%m-%d')
 
 def get_changed_posts():
     """Detect new or modified posts by comparing with previous commit."""
@@ -48,9 +58,14 @@ def get_changed_posts():
                 added_filename_pattern = f'+            "filename": "{filename}"'
                 
                 if added_filename_pattern in diff_output:
+                    # Scheduled posts wait for their publication date;
+                    # the daily scheduled workflow run picks them up then.
+                    if post.get('date', '') > blog_today():
+                        print(f"⏳ Scheduled post: {post['title']} — will notify on {post['date']}")
+                        continue
                     print(f"✓ Detected new post: {post['title']}")
                     new_posts.append(post)
-        
+
         return new_posts
     except subprocess.CalledProcessError as e:
         print(f"Git command failed: {e}")
@@ -61,6 +76,46 @@ def get_changed_posts():
         import traceback
         traceback.print_exc()
         return []
+
+def first_added_date(filename):
+    """Date (YYYY-MM-DD) of the commit that first added this post to the metadata."""
+    try:
+        out = subprocess.check_output(
+            ['git', 'log', '--format=%cs', '-S', f'"filename": "{filename}"',
+             '--', METADATA_FILE],
+            text=True
+        ).strip().splitlines()
+        # oldest matching commit is the one that introduced the entry
+        return out[-1] if out else None
+    except subprocess.CalledProcessError as e:
+        print(f"Git command failed: {e}")
+        return None
+
+def get_scheduled_posts():
+    """Posts whose publication date is today and that were pushed before today.
+
+    Posts pushed on their publication date are announced by the push-triggered
+    run, so only earlier-pushed (scheduled) posts are picked up here.
+    """
+    today = blog_today()
+    print(f"Scheduled check for {today}")
+
+    with open(METADATA_FILE, 'r') as f:
+        metadata = json.load(f)
+
+    due_posts = []
+    for post in metadata.get('posts', []):
+        if post.get('date') != today:
+            continue
+        added_on = first_added_date(post['filename'])
+        print(f"🔎 {post['title']}: dated {post['date']}, added to metadata on {added_on}")
+        if added_on and added_on < today:
+            print(f"✓ Releasing scheduled post: {post['title']}")
+            due_posts.append(post)
+        else:
+            print("   ↳ pushed today — the push-triggered run already covers it.")
+
+    return due_posts
 
 def load_subscribers():
     """Load subscriber emails from JSON file."""
@@ -182,24 +237,28 @@ def send_email_via_resend(to_email, post):
         print(f"✗ Failed to send to {to_email}: {response.text}")
         return False
 
-def main():
+def main(scheduled=False):
     """Main function to detect new posts and notify subscribers."""
     print("="*60)
     print("Blog Post Email Notification System")
+    print(f"Mode: {'scheduled release' if scheduled else 'push diff'}")
     print("="*60)
     print("Checking for new posts...\n")
-    
+
     # Check if API key is set
     if not RESEND_API_KEY:
         print("❌ ERROR: RESEND_API_KEY environment variable not set!")
         print("   Please configure the secret in GitHub repository settings.")
         sys.exit(1)
-    
-    new_posts = get_changed_posts()
-    
+
+    new_posts = get_scheduled_posts() if scheduled else get_changed_posts()
+
     if not new_posts:
-        print("ℹ️  No new posts detected in this commit.")
-        print("   This is normal if the commit doesn't add new posts.")
+        if scheduled:
+            print("ℹ️  No scheduled posts due today.")
+        else:
+            print("ℹ️  No new posts detected in this commit.")
+            print("   This is normal if the commit doesn't add new posts.")
         return
     
     print(f"✅ Found {len(new_posts)} new post(s) to notify about!\n")
@@ -240,8 +299,11 @@ def main():
             sys.exit(1)
 
 if __name__ == '__main__':
+    # Scheduled mode: release posts whose publication date arrived today
+    if len(sys.argv) > 1 and sys.argv[1] == '--scheduled':
+        main(scheduled=True)
     # Check if we're in test mode (manual run with --test flag)
-    if len(sys.argv) > 1 and sys.argv[1] == '--test':
+    elif len(sys.argv) > 1 and sys.argv[1] == '--test':
         print("🧪 TEST MODE: Sending notification for the latest post\n")
         print("="*60)
         

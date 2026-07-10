@@ -26,7 +26,12 @@ async function loadPosts() {
             throw new Error('Failed to load posts metadata');
         }
         const data = await response.json();
-        allPosts = data.posts.sort((a, b) => new Date(b.date) - new Date(a.date));
+        // Hide scheduled posts until their publication date arrives
+        const now = new Date();
+        const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        allPosts = data.posts
+            .filter(post => post.date <= today)
+            .sort((a, b) => new Date(b.date) - new Date(a.date));
         displayLatestPosts();
     } catch (error) {
         console.error('Error loading posts:', error);

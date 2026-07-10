@@ -6,7 +6,19 @@ on:
     paths:
       - "posts/posts-metadata.json"
       - "posts/**/*.md"
+  schedule:
+    # Daily at 07:00 UTC (09:00 Europe/Tirane in summer) —
+    # releases posts scheduled for today that were pushed earlier.
+    - cron: "0 7 * * *"
   workflow_dispatch:
+    inputs:
+      mode:
+        description: "Notification mode"
+        type: choice
+        options:
+          - push-diff
+          - scheduled
+        default: push-diff
 
 jobs:
   notify:
@@ -14,7 +26,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 2
+          # Full history: scheduled mode needs to know when a post was added
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -40,7 +53,7 @@ jobs:
         if: steps.load_subscribers.outputs.subscriber_count != '0'
         env:
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-        run: python scripts/notify_subscribers.py
+        run: python scripts/notify_subscribers.py ${{ (github.event_name == 'schedule' || inputs.mode == 'scheduled') && '--scheduled' || '' }}
 
       - name: Skip notification
         if: steps.load_subscribers.outputs.subscriber_count == '0'
