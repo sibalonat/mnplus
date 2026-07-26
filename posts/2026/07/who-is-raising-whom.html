@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Who Is Raising Whom - arra.blog</title>
+
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="On dailies read into a camera, a ten-month-old who reads emotions before words, and four terminals of agents being forced back to convention — Buzzati's hunt that turns around, the decision of whether the machine is the kid or the parent, and my colleague's sentence turned inside out: am I being understood?" />
+    <meta name="keywords" content="blog, technology, programming, reflections" />
+    <meta name="author" content="Marin Nikolli" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article" />
+    <meta property="og:url" content="https://sibalonat.github.io/mnplus/posts/2026/07/who-is-raising-whom.html" />
+    <meta property="og:title" content="Who Is Raising Whom" />
+    <meta property="og:description" content="On dailies read into a camera, a ten-month-old who reads emotions before words, and four terminals of agents being forced back to convention — Buzzati's hunt that turns around, the decision of whether the machine is the kid or the parent, and my colleague's sentence turned inside out: am I being understood?" />
+    <meta property="og:image" content="https://sibalonat.github.io/mnplus/assets/default-share-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="arra.blog" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://sibalonat.github.io/mnplus/posts/2026/07/who-is-raising-whom.html" />
+    <meta property="twitter:title" content="Who Is Raising Whom" />
+    <meta property="twitter:description" content="On dailies read into a camera, a ten-month-old who reads emotions before words, and four terminals of agents being forced back to convention — Buzzati's hunt that turns around, the decision of whether the machine is the kid or the parent, and my colleague's sentence turned inside out: am I being understood?" />
+    <meta property="twitter:image" content="https://sibalonat.github.io/mnplus/assets/default-share-image.png" />
+
+    <!-- Article metadata -->
+    <meta property="article:published_time" content="2026-07-29" />
+    <meta property="article:author" content="Marin Nikolli" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://sibalonat.github.io/mnplus/posts/2026/07/who-is-raising-whom.html" />
+
+    <!-- Favicon (animated via JS) -->
+    <link rel="icon" type="image/x-icon" href="../../../favicon.ico" />
+
+    <link rel="stylesheet" href="../../../styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+      // Animated favicon (inline version with corrected paths for nested directories)
+      (function () {
+        'use strict';
+        const frames = [
+          '../../../favicon-frame1.png',
+          '../../../favicon-frame2.png',
+          '../../../favicon-frame3.png',
+          '../../../favicon-frame3.png',
+          '../../../favicon-frame2.png',
+        ];
+        let currentFrame = 0;
+        function updateFavicon() {
+          const oldLink = document.querySelector("link[rel='icon']");
+          if (oldLink) oldLink.remove();
+          const link = document.createElement('link');
+          link.rel = 'icon';
+          link.type = 'image/png';
+          link.href = frames[currentFrame];
+          document.head.appendChild(link);
+          currentFrame = (currentFrame + 1) % frames.length;
+        }
+        setInterval(updateFavicon, 400);
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="background-shapes">
+      <div class="shape circle"></div>
+      <div class="shape square"></div>
+      <div class="shape triangle"></div>
+    </div>
+
+    <header>
+      <div class="container">
+        <div class="header-content">
+          <h1 class="site-title">
+            <a href="../../../index.html" style="color: inherit; text-decoration: none"
+              >[arra.blog]</a
+            >
+          </h1>
+          <p class="tagline">Breaking problems into elements</p>
+        </div>
+        <nav>
+          <a href="../../../index.html" class="nav-link">Home</a>
+          <a href="../../../index.html#blog" class="nav-link">Blog</a>
+          <a href="../../../index.html#about" class="nav-link">About</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <article id="post-view" class="post-content">
+        <a
+          href="../../../index.html"
+          class="back-button"
+          style="display: inline-block; margin-bottom: 2rem"
+          >← Back to Blog</a
+        >
+        <div id="post-content">
+          <p style="text-align: center; color: var(--text-light)">
+            Loading post...
+          </p>
+        </div>
+      </article>
+    </main>
+
+    <footer>
+      <div class="container">
+        <p>&copy; 2026 arra.blog - Breaking problems into elements</p>
+      </div>
+    </footer>
+
+    <script>
+      // Post metadata (embedded at build time)
+      const POST_FILENAME = 'who-is-raising-whom.md';
+
+      // Load and render the markdown post
+      async function loadPost() {
+        try {
+          const response = await fetch(`../../${POST_FILENAME}`);
+          if (!response.ok) {
+            throw new Error('Failed to load post');
+          }
+          const markdown = await response.text();
+          const html = marked.parse(markdown);
+
+          document.getElementById('post-content').innerHTML = html;
+
+          // Execute any scripts that were in the markdown
+          executeScripts();
+        } catch (error) {
+          console.error('Error loading post:', error);
+          document.getElementById('post-content').innerHTML =
+            '<p style="text-align: center; color: var(--text-light);">Failed to load post. <a href="../../../index.html">Return to home</a></p>';
+        }
+      }
+
+      // Execute script tags that were inserted via innerHTML
+      function executeScripts() {
+        const scripts = document
+          .getElementById('post-content')
+          .querySelectorAll('script');
+        scripts.forEach((oldScript) => {
+          const newScript = document.createElement('script');
+
+          // Copy all attributes
+          Array.from(oldScript.attributes).forEach((attr) => {
+            // Fix relative paths for scripts (we're in /posts/YYYY/MM/)
+            if (attr.name === 'src' && attr.value.startsWith('posts/')) {
+              newScript.setAttribute(attr.name, '../../../' + attr.value);
+            } else {
+              newScript.setAttribute(attr.name, attr.value);
+            }
+          });
+
+          // Copy inline script content
+          if (oldScript.textContent) {
+            newScript.textContent = oldScript.textContent;
+          }
+
+          // Replace old script with new one (this causes execution)
+          oldScript.parentNode.replaceChild(newScript, oldScript);
+        });
+      }
+
+      // Load post on page load
+      document.addEventListener('DOMContentLoaded', loadPost);
+    </script>
+  </body>
+</html>

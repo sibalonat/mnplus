@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Who Is Raising Whom",
+            "filename": "who-is-raising-whom.md",
+            "date": "2026-07-29",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "On dailies read into a camera, a ten-month-old who reads emotions before words, and four terminals of agents being forced back to convention — Buzzati's hunt that turns around, the decision of whether the machine is the kid or the parent, and my colleague's sentence turned inside out: am I being understood?",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "Nobody Can Tell You Why",
             "filename": "nobody-can-tell-you-why.md",
             "date": "2026-07-15",
