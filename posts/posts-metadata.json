@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "The Road Nobody Offered You",
+            "filename": "the-road-nobody-offered-you.md",
+            "date": "2026-08-26",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "A four-hour itinerary that took six, an audiobook about guardrails that opens with a control tower and an automated system overwriting each other, and the car ahead of me crossing a line it wasn't allowed to cross — on following the screen, following the car in front, and why the real risk is letting the options AI presents become the only ones we consider.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "Who Is Raising Whom",
             "filename": "who-is-raising-whom.md",
             "date": "2026-07-29",
