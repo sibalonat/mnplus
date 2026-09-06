@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "The Warning Light That Does Not Exist",
+            "filename": "the-warning-light-that-does-not-exist.md",
+            "date": "2026-09-09",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "Two Polish travellers who waved a dozen times to say hello and once to say the tailpipe at the back of my car had detached, a car full of sensors that never had a light for it, and a mechanic in Bajram Curri who fixed it for twenty-five euros — on trusting suppliers whose reasoning you cannot follow, the pressure that makes doing it by hand unjustifiable, Idiocracy over lunch, and why human oversight is not a warning light.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "The Road Nobody Offered You",
             "filename": "the-road-nobody-offered-you.md",
             "date": "2026-08-26",
