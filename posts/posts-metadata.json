@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Who Do You Call About the Machine",
+            "filename": "who-do-you-call-about-the-machine.md",
+            "date": "2026-09-23",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "Two IPO-bound companies asking, as if coordinated, to slow AI down; a pale yellow rotary phone with French emergency labels around the dial; Chomsky's dichotomy labels; a hundred dollars of usage that leaves nothing but a key id; and a dragon on the left of a dark trail — on labels written before the fire and labels written after it, and what we would write next to a number for the machine.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "The Warning Light That Does Not Exist",
             "filename": "the-warning-light-that-does-not-exist.md",
             "date": "2026-09-09",
