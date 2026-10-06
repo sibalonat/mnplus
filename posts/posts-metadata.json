@@ -1,6 +1,15 @@
 {
     "posts": [
         {
+            "title": "Close Enough to Switch It Off",
+            "filename": "close-enough-to-switch-it-off.md",
+            "date": "2026-10-07",
+            "author": "Marin Nikolli",
+            "category": "reflections",
+            "excerpt": "A post that was meant to be about proximity, months of studying for CompTIA and COBIT, and a 2016 case study where the network of Europe's electricity transmission operators manages its governance dashboard in a single Excel file — on the winnable bet of platforms, compliance done wrong and easy or correct and difficult, and why human oversight is a distance before it is a role: the number of steps between the person who notices and the switch.",
+            "image": "assets/default-share-image.png"
+        },
+        {
             "title": "Who Do You Call About the Machine",
             "filename": "who-do-you-call-about-the-machine.md",
             "date": "2026-09-23",
